@@ -1,0 +1,57 @@
+<html>
+<head>
+
+    <title>{{role_name}} {{ pid }}</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <!-- Compiled and minified CSS -->
+    <style>
+        .double {
+            zoom: 2;
+            transform: scale(2);
+            -ms-transform: scale(2);
+            -webkit-transform: scale(2);
+            -o-transform: scale(2);
+            -moz-transform: scale(2);
+            transform-origin: 0 0;
+            -ms-transform-origin: 0 0;
+            -webkit-transform-origin: 0 0;
+            -o-transform-origin: 0 0;
+            -moz-transform-origin: 0 0;
+        }
+    </style>
+</head>
+<body>
+<h1>Your Role: {{role_name}} - Patient ID:{{ pid }}</h1>
+<form action="patient{{pid}}" method="post">
+    <table style="width:100%">
+    {% for slice in slices %}
+      <tr>
+        <th>
+            {{ slice.z }}
+        </th>
+        <th>
+            <img src="{{ slice.img }}">
+        </th>
+        <th>
+            <div class="double">
+                <input type="checkbox" id="{{slice.z}}" name="{{slice.z}}" value="1">
+            </div>
+        </th>
+      </tr>
+    {% endfor %}
+      <tr>
+        <th>
+            <a href="patient{{ppid}}" class="btn btn-primary">Go to Google</a>
+        </th>
+        <th>
+            <input type="submit" class="btn btn-primary" value="Save & Next">
+        </th>
+        <th>
+            <a href="patient{{npid}}" class="btn btn-primary">Go to Google</a>
+        </th>
+      </tr>
+    </table>
+</form>
+</body>
+</html>
