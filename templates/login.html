@@ -1,16 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
-<body>
-    <form action="/login" method="post">
-        <label for="user"><b>Username</b></label>
-        <input type="text" placeholder="Enter Username" name="user" required>
-        <label for="pass"><b>Password</b></label>
-        <input type="password" placeholder="Enter Password" name="pass" required>
-        <button type="submit">Login</button>
-    </form>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Login{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+  <form action="/login" method="post">
+    <label for="user"><b>Username</b></label>
+    <input type="text" placeholder="Enter Username" name="user" required>
+    <label for="pass"><b>Password</b></label>
+    <input type="password" placeholder="Enter Password" name="pass" required>
+    <button type="submit">Login</button>
+  </form>
+{% endblock %}

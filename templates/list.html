@@ -1,12 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-{% for pid in plist %}
-    <a href="patient{{pid}}">{{pid}}</a> <br>
-{% endfor %}
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Patient List{% endblock %}</h1>
+{% endblock %}
+{% block content %}
+  {% for pid in plist %}
+    <a href="patient{{ pid }}">{{ pid }}</a> <br>
+  {% endfor %}
+{% endblock %}

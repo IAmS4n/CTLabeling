@@ -10,17 +10,19 @@ app = Flask(__name__)
 
 
 def np2b64(x):
-    img = Image.fromarray(x, 'RGB')
+    img = Image.fromarray(x, "RGB")
     buffer = BytesIO()
     img.save(buffer, format="JPEG")
     myimage = buffer.getvalue()
-    return "data:image/jpeg;base64," + base64.b64encode(myimage).decode('utf-8', 'ignore')
+    return "data:image/jpeg;base64," + base64.b64encode(myimage).decode(
+        "utf-8", "ignore"
+    )
 
 
 def get_role(user=None, password=None):
     if user is None and password is None:
-        user = request.cookies.get('user')
-        password = request.cookies.get('pass')
+        user = request.cookies.get("user")
+        password = request.cookies.get("pass")
     if user == "1" and password == "1":
         return 1
     elif user == "2" and password == "2":
@@ -29,14 +31,14 @@ def get_role(user=None, password=None):
         return -1
 
 
-@app.route('/patient<pid>', methods=['GET', 'POST'])
+@app.route("/patient<pid>", methods=["GET", "POST"])
 def show_panel(pid):
     pid = int(pid)
     role = get_role()
     if 0 > role:
-        return redirect(url_for('show_login'))
+        return redirect(url_for("show_login"))
 
-    if request.method == 'POST':
+    if request.method == "POST":
         pass
         # save
 
@@ -51,33 +53,40 @@ def show_panel(pid):
         role_name = "Professor"
     else:
         role_name = "Unknown"
-    return render_template('panel.html', slices=slices, pid=pid, ppid=pid - 1, npid=pid + 1, role_name=role_name)
+    return render_template(
+        "panel.html",
+        slices=slices,
+        pid=pid,
+        ppid=pid - 1,
+        npid=pid + 1,
+        role_name=role_name,
+    )
 
 
-@app.route('/list')
+@app.route("/list")
 def show_list():
     role = get_role()
 
     if 0 > role:
-        return redirect(url_for('show_login'))
+        return redirect(url_for("show_login"))
 
     plist = list(range(100))
-    return render_template('list.html', plist=plist)
+    return render_template("list.html", plist=plist)
 
 
-@app.route('/')
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/")
+@app.route("/login", methods=["GET", "POST"])
 def show_login():
-    if request.method == 'POST':
-        if 0 < get_role(request.form['user'], request.form['pass']):
-            resp = redirect(url_for('show_list'))
+    if request.method == "POST":
+        if 0 < get_role(request.form["user"], request.form["pass"]):
+            resp = redirect(url_for("show_list"))
             # resp = make_response("Ok")
-            resp.set_cookie('user', request.form['user'])
-            resp.set_cookie('pass', request.form['pass'])
+            resp.set_cookie("user", request.form["user"])
+            resp.set_cookie("pass", request.form["pass"])
             return resp
 
-    return render_template('login.html')
+    return render_template("login.html")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run()

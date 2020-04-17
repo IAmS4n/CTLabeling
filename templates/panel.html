@@ -1,57 +1,130 @@
-<html>
-<head>
+{% extends 'base.html' %}
 
-    <title>{{role_name}} {{ pid }}</title>
+{% block header %}
+  <h1>{% block title %}{{ role_name }} {{ pid }}{% endblock %}</h1>
+{% endblock %}
+{% block style %}
+  <style>
+    input[type=checkbox] + label {
+      display: block;
+      margin: 0.2em;
+      cursor: pointer;
+      padding: 0.2em;
+    }
 
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-    <!-- Compiled and minified CSS -->
-    <style>
-        .double {
-            zoom: 2;
-            transform: scale(2);
-            -ms-transform: scale(2);
-            -webkit-transform: scale(2);
-            -o-transform: scale(2);
-            -moz-transform: scale(2);
-            transform-origin: 0 0;
-            -ms-transform-origin: 0 0;
-            -webkit-transform-origin: 0 0;
-            -o-transform-origin: 0 0;
-            -moz-transform-origin: 0 0;
-        }
-    </style>
-</head>
-<body>
-<h1>Your Role: {{role_name}} - Patient ID:{{ pid }}</h1>
-<form action="patient{{pid}}" method="post">
-    <table style="width:100%">
-    {% for slice in slices %}
-      <tr>
-        <th>
+    input[type=checkbox] {
+      display: none;
+    }
+
+    input[type=checkbox] + label:before {
+      content: "\2714";
+      border: 0.1em solid #000;
+      border-radius: 0.2em;
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      padding-left: 0.2em;
+      padding-bottom: 0.3em;
+      margin-right: 0.2em;
+      vertical-align: bottom;
+      color: transparent;
+      transition: .2s;
+    }
+
+    input[type=checkbox] + label:active:before {
+      transform: scale(0);
+    }
+
+    input[type=checkbox]:checked + label:before {
+      background-color: MediumSeaGreen;
+      border-color: MediumSeaGreen;
+      color: #fff;
+    }
+
+    input[type=checkbox]:disabled + label:before {
+      transform: scale(1);
+      border-color: #aaa;
+    }
+
+    input[type=checkbox]:checked:disabled + label:before {
+      transform: scale(1);
+      background-color: #bfb;
+      border-color: #bfb;
+    }
+
+    .thumbnail {
+      max-width: 40%;
+    }
+
+    /** LIGHTBOX MARKUP **/
+
+    .lightbox {
+      /** Default lightbox to hidden */
+      display: none;
+
+      /** Position and style */
+      position: fixed;
+      z-index: 999;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      top: 0;
+      left: 0;
+      background: rgba(0, 0, 0, 0.8);
+    }
+
+    .lightbox img {
+      /** Pad the lightbox image */
+      max-width: 90%;
+      max-height: 80%;
+      margin-top: 2%;
+    }
+
+    .lightbox:target {
+      /** Remove default browser outline */
+      outline: none;
+
+      /** Unhide lightbox **/
+      display: block;
+    }
+  </style>
+{% endblock %}
+{% block content %}
+  <h1>Your Role: {{ role_name }} - Patient ID:{{ pid }}</h1>
+  <form action="patient{{ pid }}" method="post">
+    <table>
+      {% for slice in slices %}
+        <tr>
+          <th>
             {{ slice.z }}
-        </th>
-        <th>
-            <img src="{{ slice.img }}">
-        </th>
-        <th>
-            <div class="double">
-                <input type="checkbox" id="{{slice.z}}" name="{{slice.z}}" value="1">
-            </div>
-        </th>
-      </tr>
-    {% endfor %}
+          </th>
+          <th>
+            <!-- thumbnail image wrapped in a link -->
+            <a href="#img{{ loop.index }}">
+              <img src="{{ slice.img }}" class="thumbnail">
+            </a>
+            <!-- lightbox container hidden with CSS -->
+            <a href="#_" class="lightbox" id="img{{ loop.index }}">
+              <img src="{{ slice.img }}">
+            </a>
+          </th>
+          <th>
+            <input type="checkbox" id="{{ slice.z }}" name="{{ slice.z }}" value="1">
+            <label for="{{ slice.z }}">COVID-19 Positive</label>
+          </th>
+        </tr>
+      {% endfor %}
       <tr>
         <th>
-            <a href="patient{{ppid}}" class="btn btn-primary">Go to Google</a>
+          <a href="patient{{ ppid }}">Previous</a>
         </th>
         <th>
-            <input type="submit" class="btn btn-primary" value="Save & Next">
+          <input type="submit" value="Save & Next">
         </th>
         <th>
-            <a href="patient{{npid}}" class="btn btn-primary">Go to Google</a>
+          <a href="patient{{ npid }}">Next</a>
         </th>
       </tr>
     </table>
-</form>
-</body>
-</html>
+  </form>
+{% endblock %}
