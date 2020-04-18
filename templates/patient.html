@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %} {% endblock %}</h1>
+{% endblock %}
+{% block style %}
+<style>
+    input[type=checkbox] + label {
+        display: block;
+        margin: 0.2em;
+        cursor: pointer;
+        padding: 0.2em;
+    }
+
+    input[type=checkbox] {
+        display: none;
+    }
+
+    input[type=checkbox] + label:before {
+        content: "\2714";
+        border: 0.1em solid #000;
+        border-radius: 0.2em;
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        padding-left: 0.2em;
+        padding-bottom: 0.3em;
+        margin-right: 0.2em;
+        vertical-align: bottom;
+        color: transparent;
+        transition: .2s;
+    }
+
+    input[type=checkbox] + label:active:before {
+        transform: scale(0);
+    }
+
+    input[type=checkbox]:checked + label:before {
+        background-color: MediumSeaGreen;
+        border-color: MediumSeaGreen;
+        color: #fff;
+    }
+
+    input[type=checkbox]:disabled + label:before {
+        transform: scale(1);
+        border-color: #aaa;
+    }
+
+    input[type=checkbox]:checked:disabled + label:before {
+        transform: scale(1);
+        background-color: #bfb;
+        border-color: #bfb;
+    }
+
+    .thumbnail {
+        max-width: 40%;
+    }
+
+    /** LIGHTBOX MARKUP **/
+
+    .lightbox {
+        /** Default lightbox to hidden */
+        display: none;
+
+        /** Position and style */
+        position: fixed;
+        z-index: 999;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        top: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    .lightbox img {
+        /** Pad the lightbox image */
+        max-width: 90%;
+        max-height: 80%;
+        margin-top: 2%;
+    }
+
+    .lightbox:target {
+        /** Remove default browser outline */
+        outline: none;
+
+        /** Unhide lightbox **/
+        display: block;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<h1>Your Role:
+    {% if role==1 %}
+    Student
+    {% elif role==2 %}
+    Professor
+    {% else %}
+    Unknown
+    {% endif %}
+    - Patient ID:{{ pid }}</h1>
+<form action="patient{{ pid }}" method="post">
+    <input type="hidden" id="send_time" name="send_time" value="{{send_time}}">
+    <input type="hidden" id="rnd" name="rnd" value="{{rnd}}">
+    <input type="hidden" id="pid" name="pid" value="{{pid}}">
+    <table>
+        {% for slice in slices %}
+        <tr>
+            <th>
+                {{ slice.z }}
+            </th>
+            <th>
+                <!-- thumbnail image wrapped in a link -->
+                <a href="#img{{ loop.index }}">
+                    <img src="{{ slice.img }}" class="thumbnail">
+                </a>
+                <!-- lightbox container hidden with CSS -->
+                <a href="#_" class="lightbox" id="img{{ loop.index }}">
+                    <img src="{{ slice.img }}">
+                </a>
+            </th>
+            <th>
+                <input type="checkbox" id="z{{ slice.z }}" name="z{{ slice.z }}" value="1"
+                       {% if slice.checked %}
+                       checked
+                       {% endif %}
+                >
+                <label for="z{{ slice.z }}">COVID-19 Positive</label>
+            </th>
+        </tr>
+        {% endfor %}
+
+        <tr>
+            <th>
+                <a href="list">List</a>
+            </th>
+            <th style="margin: auto;text-align:center">
+
+                {% if role==1 %}
+                <input type="checkbox" id="professor_need" name="professor_need" value="1"
+                       {% if professor_need %}
+                       checked
+                       {% endif %}
+                >
+                <label for="professor_need">Needs Professor</label>
+                {% endif %}
+
+                <button type="submit"
+                        style="display: block;margin: auto;background-color: crimson;color: white;">
+                    Save & Next
+                </button>
+
+            </th>
+            <th>
+                {% if npid>=0 %}
+                <a href="patient{{ npid }}">Next</a>
+                {% endif %}
+            </th>
+        </tr>
+    </table>
+</form>
+{% endblock %}

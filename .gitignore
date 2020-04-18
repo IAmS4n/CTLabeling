@@ -1,3 +1,5 @@
+.idea/
+
 # Created by .ignore support plugin (hsz.mobi)
 ### JupyterNotebooks template
 # gitignore template for Jupyter Notebooks
@@ -571,3 +573,4 @@ $RECYCLE.BIN/
 .idea/misc.xml
 .idea/modules.xml
 .idea/vcs.xml
+/.idea/
