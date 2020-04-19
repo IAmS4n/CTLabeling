@@ -1,7 +1,7 @@
 import json
 import sqlite3
 
-import config
+from labeler import config
 
 
 def add(path, zs, priority):

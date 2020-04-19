@@ -8,9 +8,8 @@ import flask
 from flask import Flask
 from flask import render_template, request, redirect, url_for
 
-import config
-import utils
-from ct import get_ct
+from labeler import utils, config
+from labeler.ct import get_ct
 
 app = Flask(__name__)
 
