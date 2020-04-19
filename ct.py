@@ -29,13 +29,7 @@ def get_pixels_hu(slices):
     return np.array(image, dtype=np.int16)
 
 
-def color_process(ct):
-    ct[ct < -1000] = -1000
-    ct[ct > 400] = 400
-    return (ct.astype(np.float32) + 1000.0) * (255.0 / 1400.0)
-
-
-def get_ct(path, z_list):
+def get_ct(path, wl, ww, z_list=None):
     images = [
         image
         for image in glob(path + "/*")
@@ -43,10 +37,25 @@ def get_ct(path, z_list):
     ]
     images = sorted(images, key=lambda x: x.split("/")[-1])
 
-    selected_images = [images[z] for z in z_list]
+    if z_list is None:
+        selected_images = images
+    else:
+        selected_images = [images[z] for z in z_list]
 
     slices = [pydicom.read_file(image_dir) for image_dir in selected_images]
     hu_ct = get_pixels_hu(slices)
-    gs_ct = color_process(hu_ct).astype(np.uint8)
 
-    return gs_ct
+    min_hu = float(wl - ww / 2.)
+    max_hu = float(wl + ww / 2.)
+
+    hu_ct = hu_ct.astype(np.float32)
+    hu_ct[hu_ct < min_hu] = min_hu
+    hu_ct[hu_ct > max_hu] = max_hu
+    hu_ct -= min_hu
+    hu_ct *= 255. / float(ww)
+
+    hu_ct = hu_ct.astype(np.int16)
+    hu_ct[hu_ct < 0] = 0
+    hu_ct[hu_ct > 255] = 255
+
+    return hu_ct.astype(np.uint8)

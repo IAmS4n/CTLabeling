@@ -49,7 +49,7 @@ def receive(form):
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
-    print(form)
+    # print(form)
     pid = int(form["pid"])
     role = get_role()
 
@@ -87,7 +87,7 @@ def receive(form):
     cursor.close()
 
 
-def send(pid):
+def prepare_data(pid, wl, ww):
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
@@ -109,9 +109,9 @@ def send(pid):
     slices = []
     full_path = os.path.join(config.data_path, path)
 
-    ct = get_ct(full_path, zs)
+    ct = get_ct(full_path, wl=wl, ww=ww, z_list=zs)
     for z, s in zip(zs, ct):
-        img, thumbnail = utils.np2b64(s)
+        img, thumbnail = utils.encode(s)
         slices.append({"z": z, "img": img, "checked": z in positive_zs})
         mini_slices.append({"z": z, "thumbnail": thumbnail, "checked": z in positive_zs})
 
@@ -163,9 +163,28 @@ def get_list():
     cursor.close()
     return plist
 
+@app.route('/images<pid>', methods=['GET'])
+def update_images(pid):
+    pid = int(pid)
+
+    wl = request.args.get("wl")
+    if wl is None:
+        wl = -400
+    else:
+        wl = int(wl)
+
+    ww = request.args.get("ww")
+    if ww is None:
+        ww = 1500
+    else:
+        ww = int(ww)
+
+    slices, send_time, rnd, professor_need = prepare_data(pid, wl=wl, ww=ww)
+
+    return render_template('update_images.js', send_time=send_time, rnd=rnd, slices=slices)
 
 @app.route('/patient<pid>', methods=['GET', 'POST'])
-def show_panel(pid):
+def show_patient(pid):
     role = get_role()
     if 0 > role:
         return redirect(url_for('show_login'))
@@ -178,15 +197,16 @@ def show_panel(pid):
         if npid < 0:
             return redirect(url_for('show_list'))
         else:
-            return redirect(url_for('show_panel', pid=npid))
+            return redirect(url_for('show_patient', pid=npid))
 
-    slices, send_time, rnd, professor_need = send(pid)
+    slices, send_time, rnd, professor_need = prepare_data(pid, wl=-400, ww=1500)
 
     return render_template('patient.html', send_time=send_time, rnd=rnd, slices=slices,
                            pid=pid, npid=npid, role=role,
                            professor_need=professor_need)
 
 
+@app.route('/')
 @app.route('/list')
 def show_list():
     role = get_role()
@@ -198,7 +218,6 @@ def show_list():
     return render_template('list.html', plist=plist)
 
 
-@app.route('/')
 @app.route('/login', methods=['GET', 'POST'])
 def show_login():
     if request.method == 'POST':

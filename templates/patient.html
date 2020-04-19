@@ -53,7 +53,7 @@
     }
 
     .thumbnail {
-        max-width: 40%;
+        max-width: 50%;
     }
 
     /** LIGHTBOX MARKUP **/
@@ -87,7 +87,52 @@
         /** Unhide lightbox **/
         display: block;
     }
+
+    /* The sidebar menu */
+    .sidenav {
+        height: 100%; /* Full-height: remove this if you want "auto" height */
+        width: 200px; /* Set the width of the sidebar */
+        position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+        z-index: 1; /* Stay on top */
+        top: 0; /* Stay at the top */
+        left: 0;
+        background-color: #111; /* Black */
+        overflow-x: hidden; /* Disable horizontal scroll */
+        padding-top: 20px;
+    }
+
+    /* The navigation menu links */
+    .sidenav a {
+        padding: 6px 8px 6px 16px;
+        text-decoration: none;
+        font-size: 25px;
+        color: #818181;
+        display: block;
+    }
+
+    /* When you mouse over the navigation links, change their color */
+    .sidenav a:hover {
+        color: #f1f1f1;
+    }
+
+    /* Style page content */
+    .main {
+        margin-left: 20px; /* Same as the width of the sidebar */
+        padding: 0px 10px;
+    }
+
+    /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
+    @media screen and (max-height: 450px) {
+        .sidenav {
+            padding-top: 15px;
+        }
+
+        .sidenav a {
+            font-size: 18px;
+        }
+    }
 </style>
+
 {% endblock %}
 {% block content %}
 <h1>Your Role:
@@ -99,64 +144,155 @@
     Unknown
     {% endif %}
     - Patient ID:{{ pid }}</h1>
-<form action="patient{{ pid }}" method="post">
-    <input type="hidden" id="send_time" name="send_time" value="{{send_time}}">
-    <input type="hidden" id="rnd" name="rnd" value="{{rnd}}">
-    <input type="hidden" id="pid" name="pid" value="{{pid}}">
-    <table>
-        {% for slice in slices %}
-        <tr>
-            <th>
-                {{ slice.z }}
-            </th>
-            <th>
-                <!-- thumbnail image wrapped in a link -->
-                <a href="#img{{ loop.index }}">
-                    <img src="{{ slice.img }}" class="thumbnail">
-                </a>
-                <!-- lightbox container hidden with CSS -->
-                <a href="#_" class="lightbox" id="img{{ loop.index }}">
-                    <img src="{{ slice.img }}">
-                </a>
-            </th>
-            <th>
-                <input type="checkbox" id="z{{ slice.z }}" name="z{{ slice.z }}" value="1"
-                       {% if slice.checked %}
-                       checked
-                       {% endif %}
-                >
-                <label for="z{{ slice.z }}">COVID-19 Positive</label>
-            </th>
-        </tr>
-        {% endfor %}
 
-        <tr>
-            <th>
-                <a href="list">List</a>
-            </th>
-            <th style="margin: auto;text-align:center">
+<div class="sidenav">
+    <p style="color: red;text-align: center;font-weight: bold;">Menu</p>
+    <a href="list">List</a>
+    {% if npid>=0 %}
+    <a href="patient{{ npid }}">Next Patient</a>
+    {% endif %}
+    <hr>
+    <p style="color: red;text-align: center;font-weight: bold;">View</p>
+    <a href="#" id='view_Abdomen'>Abdomen</a>
+    <a href="#" id='view_Angio'>Angio</a>
+    <a href="#" id='view_Bone'>Bone</a>
+    <a href="#" id='view_Brain'>Brain</a>
+    <a href="#" id='view_Chest'>Chest</a>
+    <a href="#" id='view_Lungs'>Lungs</a>
+    <a href="#" id='view_Full'>Full Dynamic</a>
+</div>
 
-                {% if role==1 %}
-                <input type="checkbox" id="professor_need" name="professor_need" value="1"
-                       {% if professor_need %}
-                       checked
-                       {% endif %}
-                >
-                <label for="professor_need">Needs Professor</label>
-                {% endif %}
+<!-- Page content -->
+<div class="main">
+    <form action="patient{{ pid }}" method="post">
+        <input type="hidden" id="send_time" name="send_time" value="{{send_time}}">
+        <input type="hidden" id="rnd" name="rnd" value="{{rnd}}">
+        <input type="hidden" id="pid" name="pid" value="{{pid}}">
+        <table>
+            {% for slice in slices %}
+            <tr>
+                <th>
+                    {{ slice.z }}
+                </th>
+                <th>
+                    <!-- thumbnail image wrapped in a link -->
+                    <a href="#img{{ loop.index }}">
+                        <img id="img_{{slice.z}}_small" src="" class="thumbnail">
+                    </a>
+                    <!-- lightbox container hidden with CSS -->
+                    <a href="#_" class="lightbox" id="img{{ loop.index }}">
+                        <img id="img_{{slice.z}}_big" src="{{ slice.img }}"
+                             onload='document.getElementById("img_{{slice.z}}_small").src = document.getElementById("img_{{slice.z}}_big").src;'>
+                    </a>
+                </th>
+                <th>
+                    <input type="checkbox" id="z{{ slice.z }}" name="z{{ slice.z }}" value="1"
+                           {% if slice.checked %}
+                           checked
+                           {% endif %}
+                    >
+                    <label for="z{{ slice.z }}">COVID-19 Positive</label>
+                </th>
+            </tr>
+            {% endfor %}
 
-                <button type="submit"
-                        style="display: block;margin: auto;background-color: crimson;color: white;">
-                    Save & Next
-                </button>
+            <tr>
+                <th></th>
+                <th style="margin: auto;text-align:center">
+                    <button type="submit"
+                            style="display: block;margin: auto;background-color: crimson;color: white;">
+                        Save & Next
+                    </button>
+                </th>
+                <th>
+                    {% if role==1 %}
+                    <input type="checkbox" id="professor_need" name="professor_need" value="1"
+                           {% if professor_need %}
+                           checked
+                           {% endif %}
+                    >
+                    <label for="professor_need">Needs Professor</label>
+                    {% endif %}
+                    <input type="checkbox" id="dicom_need" name="dicom_need" value="1"
+                           {% if dicom_need %}
+                           checked
+                           {% endif %}
+                    >
+                    <label for="dicom_need">Needs DICOM</label>
+                </th>
+            </tr>
+        </table>
+    </form>
+</div>
 
-            </th>
-            <th>
-                {% if npid>=0 %}
-                <a href="patient{{ npid }}">Next</a>
-                {% endif %}
-            </th>
-        </tr>
-    </table>
-</form>
+<script type="text/javascript">
+    var myLink = document.getElementById('view_Abdomen');
+    myLink.onclick = function () {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "images{{pid}}?wl=60&ww=400";
+        document.getElementsByTagName("head")[0].appendChild(script);
+        return false;
+    }
+</script>
+<script type="text/javascript">
+    var myLink = document.getElementById('view_Angio');
+    myLink.onclick = function () {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "images{{pid}}?wl=300&ww=600";
+        document.getElementsByTagName("head")[0].appendChild(script);
+        return false;
+    }
+</script>
+<script type="text/javascript">
+    var myLink = document.getElementById('view_Bone');
+    myLink.onclick = function () {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "images{{pid}}?wl=300&ww=1500";
+        document.getElementsByTagName("head")[0].appendChild(script);
+        return false;
+    }
+</script>
+<script type="text/javascript">
+    var myLink = document.getElementById('view_Brain');
+    myLink.onclick = function () {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "images{{pid}}?wl=40&ww=80";
+        document.getElementsByTagName("head")[0].appendChild(script);
+        return false;
+    }
+</script>
+<script type="text/javascript">
+    var myLink = document.getElementById('view_Chest');
+    myLink.onclick = function () {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "images{{pid}}?wl=40&ww=400";
+        document.getElementsByTagName("head")[0].appendChild(script);
+        return false;
+    }
+</script>
+<script type="text/javascript">
+    var myLink = document.getElementById('view_Lungs');
+    myLink.onclick = function () {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "images{{pid}}?wl=-400&ww=1500";
+        document.getElementsByTagName("head")[0].appendChild(script);
+        return false;
+    }
+</script>
+<script type="text/javascript">
+    var myLink = document.getElementById('view_Full');
+    myLink.onclick = function () {
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "images{{pid}}?wl=-305&ww=2390";
+        document.getElementsByTagName("head")[0].appendChild(script);
+        return false;
+    }
+</script>
 {% endblock %}

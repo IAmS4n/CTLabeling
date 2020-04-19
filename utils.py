@@ -4,12 +4,13 @@ from io import BytesIO
 from PIL import Image
 
 
-def np2b64(x):
-    img = Image.fromarray(x, 'L')
+def encode(img):
+    img = Image.fromarray(img, "L")
+
     buffer = BytesIO()
-    img.save(buffer, format="JPEG")
+    img.save(buffer, format="PNG")
     myimage = buffer.getvalue()
-    org = "data:image/jpeg;base64," + base64.b64encode(myimage).decode('utf-8', 'ignore')
+    org = "data:image/png;base64," + base64.b64encode(myimage).decode('utf-8', 'ignore')
 
     buffer = BytesIO()
     img.thumbnail((32, 32), Image.ANTIALIAS)
