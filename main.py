@@ -25,7 +25,7 @@ view_list = [
 
 
 def get_db():
-    db = getattr(flask.g, '_database', None)
+    db = getattr(flask.g, "_database", None)
     if db is None:
         db = flask.g._database = sqlite3.connect(config.db_path)
     return db
@@ -33,7 +33,7 @@ def get_db():
 
 @app.teardown_appcontext
 def close_connection(exception):
-    db = getattr(flask.g, '_database', None)
+    db = getattr(flask.g, "_database", None)
     if db is not None:
         db.close()
 
@@ -41,8 +41,8 @@ def close_connection(exception):
 def get_role(user=None, password=None):
     if user is None and password is None:
         try:
-            user = request.cookies.get('user')
-            password = request.cookies.get('pass')
+            user = request.cookies.get("user")
+            password = request.cookies.get("pass")
         except:
             return -1
 
@@ -127,7 +127,9 @@ def prepare_data(pid, wl, ww):
     for z, s in zip(zs, ct):
         img, thumbnail = utils.encode(s)
         slices.append({"z": z, "img": img, "checked": z in positive_zs})
-        mini_slices.append({"z": z, "thumbnail": thumbnail, "checked": z in positive_zs})
+        mini_slices.append(
+            {"z": z, "thumbnail": thumbnail, "checked": z in positive_zs}
+        )
 
     details = json.dumps(mini_slices)
 
@@ -180,14 +182,27 @@ def get_list():
     cursor.execute(query)
 
     plist = []
-    for pid, student_check, professor_check, professor_need, dicom_need in cursor.fetchall():
-        plist.append({"pid": pid, "professor_need": professor_need, "dicom_need": dicom_need,
-                      "student": student_check, "professor": professor_check})
+    for (
+        pid,
+        student_check,
+        professor_check,
+        professor_need,
+        dicom_need,
+    ) in cursor.fetchall():
+        plist.append(
+            {
+                "pid": pid,
+                "professor_need": professor_need,
+                "dicom_need": dicom_need,
+                "student": student_check,
+                "professor": professor_check,
+            }
+        )
     cursor.close()
     return plist
 
 
-@app.route('/images<pid>', methods=['GET'])
+@app.route("/images<pid>", methods=["GET"])
 def update_images(pid):
     pid = int(pid)
 
@@ -205,56 +220,70 @@ def update_images(pid):
 
     slices, send_time, rnd, _, _ = prepare_data(pid, wl=wl, ww=ww)
 
-    return render_template('update_images.js', send_time=send_time, rnd=rnd, slices=slices)
+    return render_template(
+        "update_images.js", send_time=send_time, rnd=rnd, slices=slices
+    )
 
 
-@app.route('/patient<pid>', methods=['GET', 'POST'])
+@app.route("/patient<pid>", methods=["GET", "POST"])
 def show_patient(pid):
     role = get_role()
     if 0 > role:
-        return redirect(url_for('show_login'))
+        return redirect(url_for("show_login"))
     #######################################################
     pid = int(pid)
     npid, hpid = next_pids(pid)
 
-    if request.method == 'POST':
+    if request.method == "POST":
         receive(request.form)
         if npid < 0:
-            return redirect(url_for('show_list'))
+            return redirect(url_for("show_list"))
         else:
-            return redirect(url_for('show_patient', pid=npid))
+            return redirect(url_for("show_patient", pid=npid))
 
-    slices, send_time, rnd, professor_need, dicom_need = prepare_data(pid, wl=-400, ww=1500)
+    slices, send_time, rnd, professor_need, dicom_need = prepare_data(
+        pid, wl=-400, ww=1500
+    )
 
-    return render_template('patient.html', send_time=send_time, rnd=rnd, slices=slices,
-                           pid=pid, npid=npid, hpid=hpid, role=role, view_list=view_list,
-                           professor_need=professor_need, dicom_need=dicom_need)
+    return render_template(
+        "patient.html",
+        send_time=send_time,
+        rnd=rnd,
+        slices=slices,
+        pid=pid,
+        npid=npid,
+        hpid=hpid,
+        role=role,
+        view_list=view_list,
+        professor_need=professor_need,
+        dicom_need=dicom_need,
+    )
 
 
-@app.route('/')
-@app.route('/list')
+@app.route("/")
+@app.route("/list")
 def show_list():
     role = get_role()
 
     if 0 > role:
-        return redirect(url_for('show_login'))
+        return redirect(url_for("show_login"))
     ############################################################
     plist = get_list()
-    return render_template('list.html', plist=plist)
+    return render_template("list.html", plist=plist)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def show_login():
-    if request.method == 'POST':
-        if 0 < get_role(request.form['user'], request.form['pass']):
-            resp = redirect(url_for('show_list'))
+    if request.method == "POST":
+        if 0 < get_role(request.form["user"], request.form["pass"]):
+            resp = redirect(url_for("show_list"))
             # resp = make_response("Ok")
-            resp.set_cookie('user', request.form['user'])
-            resp.set_cookie('pass', request.form['pass'])
+            resp.set_cookie("user", request.form["user"])
+            resp.set_cookie("pass", request.form["pass"])
             return resp
 
-    return render_template('login.html')
+    return render_template("login.html")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host="0.0.0.0")

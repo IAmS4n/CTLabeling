@@ -3,7 +3,8 @@ import sqlite3
 
 import config
 
-def add(path,zs,priority):
+
+def add(path, zs, priority):
     db = sqlite3.connect(config.db_path)
     cursor = db.cursor()
 
@@ -15,9 +16,8 @@ def add(path,zs,priority):
     db.close()
 
 
-add("patient_99/SR 4/", list(range(20,100,5)), 10)
-add("patient_98/SR 4/", list(range(20,100,5)), 10)
-add("patient_97/SR 4/", list(range(20,100,5)), 10)
-add("patient_96/SR 4/", list(range(20,100,5)), 10)
-add("patient_95/SR 4/", list(range(20,100,5)), 10)
-
+add("patient_99/SR 4/", list(range(20, 100, 5)), 10)
+add("patient_98/SR 4/", list(range(20, 100, 5)), 10)
+add("patient_97/SR 4/", list(range(20, 100, 5)), 10)
+add("patient_96/SR 4/", list(range(20, 100, 5)), 10)
+add("patient_95/SR 4/", list(range(20, 100, 5)), 10)

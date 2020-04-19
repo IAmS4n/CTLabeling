@@ -30,11 +30,7 @@ def get_pixels_hu(slices):
 
 
 def get_ct(path, wl, ww, z_list=None):
-    images = [
-        image
-        for image in glob(path + "/*")
-        if "tmb" not in image.split("/")[-1]
-    ]
+    images = [image for image in glob(path + "/*") if "tmb" not in image.split("/")[-1]]
     images = sorted(images, key=lambda x: x.split("/")[-1])
 
     if z_list is None:
@@ -45,14 +41,14 @@ def get_ct(path, wl, ww, z_list=None):
     slices = [pydicom.read_file(image_dir) for image_dir in selected_images]
     hu_ct = get_pixels_hu(slices)
 
-    min_hu = float(wl - ww / 2.)
-    max_hu = float(wl + ww / 2.)
+    min_hu = float(wl - ww / 2.0)
+    max_hu = float(wl + ww / 2.0)
 
     hu_ct = hu_ct.astype(np.float32)
     hu_ct[hu_ct < min_hu] = min_hu
     hu_ct[hu_ct > max_hu] = max_hu
     hu_ct -= min_hu
-    hu_ct *= 255. / float(ww)
+    hu_ct *= 255.0 / float(ww)
 
     hu_ct = hu_ct.astype(np.int16)
     hu_ct[hu_ct < 0] = 0
