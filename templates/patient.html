@@ -148,6 +148,10 @@
 <div class="sidenav">
     <p style="color: red;text-align: center;font-weight: bold;">Menu</p>
     <a href="list">List</a>
+    {% if hpid>=0 %}
+    <a href="patient{{ hpid }}">First Patient</a>
+    {% endif %}
+
     {% if npid>=0 %}
     <a href="patient{{ npid }}">Next Patient</a>
     {% endif %}

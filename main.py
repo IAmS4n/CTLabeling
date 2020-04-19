@@ -127,26 +127,35 @@ def prepare_data(pid, wl, ww):
     return slices, send_time, rnd, professor_need
 
 
-def next_pid(pid):
+def next_pids(pid):
     role = get_role()
 
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
     if role == 1:
-        query = """SELECT pid from samples WHERE pid != ? AND professor_check = 0  AND student_check = 0 ORDER BY priority DESC, pid ASC LIMIT 1;"""
+        query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where (professor_check = 0  AND student_check = 0) OR pid = ?) where pid=?;"""
+        query_hpid = """SELECT pid from samples WHERE professor_check = 0  AND student_check = 0 ORDER BY priority DESC, pid ASC LIMIT 1"""
     else:
-        query = """SELECT pid from samples WHERE pid != ? AND professor_need = 1 ORDER BY priority DESC, pid ASC LIMIT 1;"""
-    cursor.execute(query, (pid,))
-    res = cursor.fetchone()
+        query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where professor_need = 1 OR pid = ?) where pid=?;"""
+        query_hpid = """SELECT pid from samples WHERE professor_need = 1 ORDER BY priority DESC, pid ASC LIMIT 1"""
 
-    if res is None:
+    cursor.execute(query_npid, (pid, pid))
+    res = cursor.fetchone()
+    if (res is None) or (res[0] is None):
         npid = -1
     else:
         npid = res[0]
 
+    cursor.execute(query_hpid)
+    res = cursor.fetchone()
+    if (res is None) or (res[0] is None):
+        hpid = -1
+    else:
+        hpid = res[0]
+
     cursor.close()
-    return npid
+    return npid, hpid
 
 
 def get_list():
@@ -162,6 +171,7 @@ def get_list():
                       "student": student_check, "professor": professor_check})
     cursor.close()
     return plist
+
 
 @app.route('/images<pid>', methods=['GET'])
 def update_images(pid):
@@ -183,6 +193,7 @@ def update_images(pid):
 
     return render_template('update_images.js', send_time=send_time, rnd=rnd, slices=slices)
 
+
 @app.route('/patient<pid>', methods=['GET', 'POST'])
 def show_patient(pid):
     role = get_role()
@@ -190,7 +201,7 @@ def show_patient(pid):
         return redirect(url_for('show_login'))
     #######################################################
     pid = int(pid)
-    npid = next_pid(pid)
+    npid, hpid = next_pids(pid)
 
     if request.method == 'POST':
         receive(request.form)
@@ -202,7 +213,7 @@ def show_patient(pid):
     slices, send_time, rnd, professor_need = prepare_data(pid, wl=-400, ww=1500)
 
     return render_template('patient.html', send_time=send_time, rnd=rnd, slices=slices,
-                           pid=pid, npid=npid, role=role,
+                           pid=pid, npid=npid, hpid=hpid, role=role,
                            professor_need=professor_need)
 
 
