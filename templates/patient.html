@@ -146,7 +146,7 @@
     - Patient ID:{{ pid }}</h1>
 
 <div class="sidenav">
-    <p style="color: red;text-align: center;font-weight: bold;">Menu</p>
+    <h1 style="color: yellow;text-align: center;font-weight: bold;">Menu</h1>
     <a href="list">List</a>
     {% if hpid>=0 %}
     <a href="patient{{ hpid }}">First Patient</a>
@@ -156,13 +156,10 @@
     <a href="patient{{ npid }}">Next Patient</a>
     {% endif %}
     <hr>
-    <p style="color: red;text-align: center;font-weight: bold;">View</p>
-    <a href="#" id='view_Abdomen'>Abdomen</a>
-    <a href="#" id='view_Angio'>Angio</a>
-    <a href="#" id='view_Bone'>Bone</a>
-    <a href="#" id='view_Brain'>Brain</a>
-    <a href="#" id='view_Chest'>Chest</a>
-    <a href="#" id='view_Lungs'>Lungs</a>
+    <h1 style="color: yellow;text-align: center;font-weight: bold;">View</h1>
+    {% for view in view_list %}
+    <a href="#" id='view_{{view.name}}'>{{view.name}}</a>
+    {% endfor %}
 </div>
 
 <!-- Page content -->
@@ -230,63 +227,15 @@
 </div>
 
 <script type="text/javascript">
-    var myLink = document.getElementById('view_Abdomen');
-    myLink.onclick = function () {
+    {% for view in view_list %}
+    document.getElementById('view_{{view.name}}').onclick = function () {
         var script = document.createElement("script");
         script.type = "text/javascript";
-        script.src = "images{{pid}}?wl=60&ww=400";
+        script.src = "images{{pid}}?wl={{view.wl}}&ww={{view.ww}}";
         document.getElementsByTagName("head")[0].appendChild(script);
         return false;
     }
+    {% endfor %}
 </script>
-<script type="text/javascript">
-    var myLink = document.getElementById('view_Angio');
-    myLink.onclick = function () {
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "images{{pid}}?wl=300&ww=600";
-        document.getElementsByTagName("head")[0].appendChild(script);
-        return false;
-    }
-</script>
-<script type="text/javascript">
-    var myLink = document.getElementById('view_Bone');
-    myLink.onclick = function () {
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "images{{pid}}?wl=300&ww=1500";
-        document.getElementsByTagName("head")[0].appendChild(script);
-        return false;
-    }
-</script>
-<script type="text/javascript">
-    var myLink = document.getElementById('view_Brain');
-    myLink.onclick = function () {
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "images{{pid}}?wl=40&ww=80";
-        document.getElementsByTagName("head")[0].appendChild(script);
-        return false;
-    }
-</script>
-<script type="text/javascript">
-    var myLink = document.getElementById('view_Chest');
-    myLink.onclick = function () {
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "images{{pid}}?wl=40&ww=400";
-        document.getElementsByTagName("head")[0].appendChild(script);
-        return false;
-    }
-</script>
-<script type="text/javascript">
-    var myLink = document.getElementById('view_Lungs');
-    myLink.onclick = function () {
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "images{{pid}}?wl=-400&ww=1500";
-        document.getElementsByTagName("head")[0].appendChild(script);
-        return false;
-    }
-</script>
+
 {% endblock %}

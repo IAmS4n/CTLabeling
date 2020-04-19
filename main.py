@@ -14,6 +14,15 @@ from ct import get_ct
 
 app = Flask(__name__)
 
+view_list = [
+    {"name": "Abdomen", "wl": 60, "ww": 400},
+    {"name": "Angio", "wl": 300, "ww": 600},
+    {"name": "Bone", "wl": 300, "ww": 1500},
+    {"name": "Brain", "wl": 40, "ww": 80},
+    {"name": "Chest", "wl": 40, "ww": 400},
+    {"name": "Lungs", "wl": -400, "ww": 1500},
+]
+
 
 def get_db():
     db = getattr(flask.g, '_database', None)
@@ -218,7 +227,7 @@ def show_patient(pid):
     slices, send_time, rnd, professor_need, dicom_need = prepare_data(pid, wl=-400, ww=1500)
 
     return render_template('patient.html', send_time=send_time, rnd=rnd, slices=slices,
-                           pid=pid, npid=npid, hpid=hpid, role=role,
+                           pid=pid, npid=npid, hpid=hpid, role=role, view_list=view_list,
                            professor_need=professor_need, dicom_need=dicom_need)
 
 
