@@ -73,15 +73,20 @@ def receive(form):
     positive_zs = json.dumps(positive_zs)
 
     if ("professor_need" in form) and form["professor_need"] == "1":
-        professor_need = True
+        professor_need = 1
     else:
-        professor_need = False
+        professor_need = 0
+
+    if ("dicom_need" in form) and form["dicom_need"] == "1":
+        dicom_need = 1
+    else:
+        dicom_need = 0
 
     if role == 1:
-        query = """Update samples set student_check = 1, professor_need = ?, positive_zs = ? where pid = ?"""
+        query = """Update samples set student_check = 1, professor_need = ?, dicom_need = ?, positive_zs = ? where pid = ?"""
     else:
-        query = """Update samples set professor_check = 1, professor_need = ?, positive_zs = ? where pid = ?"""
-    cursor.execute(query, (professor_need, positive_zs, pid))
+        query = """Update samples set professor_check = 1, professor_need = ?, dicom_need = ?, positive_zs = ? where pid = ?"""
+    cursor.execute(query, (professor_need, dicom_need, positive_zs, pid))
     sqliteConnection.commit()
 
     cursor.close()
@@ -92,9 +97,9 @@ def prepare_data(pid, wl, ww):
     cursor = sqliteConnection.cursor()
 
     # load old values
-    query = """SELECT path, zs, professor_need, positive_zs from samples where pid = ?;"""
+    query = """SELECT path, zs, professor_need, dicom_need, positive_zs from samples where pid = ?;"""
     cursor.execute(query, (pid,))
-    path, zs, professor_need, positive_zs = cursor.fetchone()
+    path, zs, professor_need, dicom_need, positive_zs = cursor.fetchone()
     zs = json.loads(zs)
     if positive_zs is not None:
         positive_zs = json.loads(positive_zs)
@@ -124,7 +129,7 @@ def prepare_data(pid, wl, ww):
     sqliteConnection.commit()
 
     cursor.close()
-    return slices, send_time, rnd, professor_need
+    return slices, send_time, rnd, professor_need, dicom_need
 
 
 def next_pids(pid):
@@ -162,12 +167,12 @@ def get_list():
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
-    query = """SELECT pid, student_check, professor_check, professor_need from samples ORDER BY priority DESC, pid ASC;"""
+    query = """SELECT pid, student_check, professor_check, professor_need, dicom_need from samples ORDER BY priority DESC, pid ASC;"""
     cursor.execute(query)
 
     plist = []
-    for pid, student_check, professor_check, professor_need in cursor.fetchall():
-        plist.append({"pid": pid, "professor_need": professor_need,
+    for pid, student_check, professor_check, professor_need, dicom_need in cursor.fetchall():
+        plist.append({"pid": pid, "professor_need": professor_need, "dicom_need": dicom_need,
                       "student": student_check, "professor": professor_check})
     cursor.close()
     return plist
@@ -189,7 +194,7 @@ def update_images(pid):
     else:
         ww = int(ww)
 
-    slices, send_time, rnd, professor_need = prepare_data(pid, wl=wl, ww=ww)
+    slices, send_time, rnd, _, _ = prepare_data(pid, wl=wl, ww=ww)
 
     return render_template('update_images.js', send_time=send_time, rnd=rnd, slices=slices)
 
@@ -210,11 +215,11 @@ def show_patient(pid):
         else:
             return redirect(url_for('show_patient', pid=npid))
 
-    slices, send_time, rnd, professor_need = prepare_data(pid, wl=-400, ww=1500)
+    slices, send_time, rnd, professor_need, dicom_need = prepare_data(pid, wl=-400, ww=1500)
 
     return render_template('patient.html', send_time=send_time, rnd=rnd, slices=slices,
                            pid=pid, npid=npid, hpid=hpid, role=role,
-                           professor_need=professor_need)
+                           professor_need=professor_need, dicom_need=dicom_need)
 
 
 @app.route('/')

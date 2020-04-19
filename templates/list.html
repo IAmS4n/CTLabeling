@@ -82,6 +82,13 @@
                 Professor
             </button>
             {% endif %}
+
+            {% if p.dicom_need %}
+            <button type="button" style="opacity: 0.8;margin: auto;background-color: darkred;color: white;"> Needs
+                DICOM
+            </button>
+            {% endif %}
+
         </li>
     </a>
 
