@@ -159,7 +159,6 @@
     <a href="#" id='view_Brain'>Brain</a>
     <a href="#" id='view_Chest'>Chest</a>
     <a href="#" id='view_Lungs'>Lungs</a>
-    <a href="#" id='view_Full'>Full Dynamic</a>
 </div>
 
 <!-- Page content -->
@@ -281,16 +280,6 @@
         var script = document.createElement("script");
         script.type = "text/javascript";
         script.src = "images{{pid}}?wl=-400&ww=1500";
-        document.getElementsByTagName("head")[0].appendChild(script);
-        return false;
-    }
-</script>
-<script type="text/javascript">
-    var myLink = document.getElementById('view_Full');
-    myLink.onclick = function () {
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "images{{pid}}?wl=-305&ww=2390";
         document.getElementsByTagName("head")[0].appendChild(script);
         return false;
     }
