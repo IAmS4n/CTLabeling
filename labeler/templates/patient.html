@@ -227,24 +227,18 @@
 </div>
 
 <script type="text/javascript">
+    var selected_view_item = document.getElementById('view_Lungs');
     document.getElementById('view_Lungs').style.textShadow = "0px 0px 5px green";
 
-    function clear_selected_view() {
-        {% for view in view_list %}
-            document.getElementById('view_{{view.name}}').style.textShadow = "";
-        {% endfor %}
-    };
     function change_selected_view() {
-        {% for view in view_list %}
-            if (document.getElementById('view_{{view.name}}').style.textShadow!="")
-                document.getElementById('view_{{view.name}}').style.textShadow = "0px 0px 5px green";
-        {% endfor %}
+        selected_view_item.style.textShadow = "0px 0px 5px green";
     };
 
     {% for view in view_list %}
     document.getElementById('view_{{view.name}}').onclick = function () {
-        clear_selected_view();
-        document.getElementById('view_{{view.name}}').style.textShadow = "0px 0px 5px red";
+        selected_view_item.style.textShadow="";
+        selected_view_item = document.getElementById('view_{{view.name}}');
+        selected_view_item.style.textShadow = "0px 0px 5px red";
 
         var script = document.createElement("script");
         script.type = "text/javascript";
