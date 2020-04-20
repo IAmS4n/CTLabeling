@@ -4,3 +4,4 @@
 
 document.getElementById("send_time").value += "_{{send_time}}";
 document.getElementById("rnd").value += "_{{rnd}}";
+change_selected_view();
