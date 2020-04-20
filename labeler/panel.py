@@ -1,66 +1,27 @@
 import json
 import os
 import random
-import sqlite3
 import time
 
-import flask
-from flask import Flask
+from flask import Blueprint
+from flask import g
 from flask import render_template, request, redirect, url_for
 
-import config
-import utils
-from ct import get_ct
+from labeler import utils, config
+from labeler.auth import login_required
+from labeler.ct import get_ct
+from labeler.db import get_db
 
-app = Flask(__name__)
-
-view_list = [
-    {"name": "Abdomen", "wl": 60, "ww": 400},
-    {"name": "Angio", "wl": 300, "ww": 600},
-    {"name": "Bone", "wl": 300, "ww": 1500},
-    {"name": "Brain", "wl": 40, "ww": 80},
-    {"name": "Chest", "wl": 40, "ww": 400},
-    {"name": "Lungs", "wl": -400, "ww": 1500},
-]
-
-
-def get_db():
-    db = getattr(flask.g, "_database", None)
-    if db is None:
-        db = flask.g._database = sqlite3.connect(config.db_path)
-    return db
-
-
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(flask.g, "_database", None)
-    if db is not None:
-        db.close()
-
-
-def get_role(user=None, password=None):
-    if user is None and password is None:
-        try:
-            user = request.cookies.get("user")
-            password = request.cookies.get("pass")
-        except:
-            return -1
-
-    if config.student["user"] == user and config.student["pass"] == password:
-        return 1
-    elif config.professor["user"] == user and config.professor["pass"] == password:
-        return 2
-
-    return -1
+bp = Blueprint("panel", __name__, url_prefix="/panel")
 
 
 def receive(form):
-    sqliteConnection = get_db()
-    cursor = sqliteConnection.cursor()
+    sqlite_connection = get_db()
+    cursor = sqlite_connection.cursor()
 
     # print(form)
     pid = int(form["pid"])
-    role = get_role()
+    role = g.user["role"]
 
     send_time = form["send_time"]
     receive_time = time.time()
@@ -71,7 +32,7 @@ def receive(form):
     query = """INSERT INTO log_receive (pid, send_time, receive_time, details, rnd, role) VALUES (?, ?, ?, ?, ?, ?);"""
     data_tuple = (pid, send_time, receive_time, details, rnd, role)
     cursor.execute(query, data_tuple)
-    sqliteConnection.commit()
+    sqlite_connection.commit()
 
     # update samples
     positive_zs = []
@@ -96,7 +57,7 @@ def receive(form):
     else:
         query = """Update samples set professor_check = 1, professor_need = ?, dicom_need = ?, positive_zs = ? where pid = ?"""
     cursor.execute(query, (professor_need, dicom_need, positive_zs, pid))
-    sqliteConnection.commit()
+    sqlite_connection.commit()
 
     cursor.close()
 
@@ -144,17 +105,17 @@ def prepare_data(pid, wl, ww):
 
 
 def next_pids(pid):
-    role = get_role()
+    role = g.user["role"]
 
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
     if role == 1:
         query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where (professor_check = 0  AND student_check = 0) OR pid = ?) where pid=?;"""
-        query_hpid = """SELECT pid from samples WHERE professor_check = 0  AND student_check = 0 ORDER BY priority DESC, pid ASC LIMIT 1"""
+        query_hpid = """SELECT pid from samples WHERE professor_check = 0  AND student_check = 0 ORDER BY priority DESC, pid ASC LIMIT 1;"""
     else:
         query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where professor_need = 1 OR pid = ?) where pid=?;"""
-        query_hpid = """SELECT pid from samples WHERE professor_need = 1 ORDER BY priority DESC, pid ASC LIMIT 1"""
+        query_hpid = """SELECT pid from samples WHERE professor_need = 1 ORDER BY priority DESC, pid ASC LIMIT 1;"""
 
     cursor.execute(query_npid, (pid, pid))
     res = cursor.fetchone()
@@ -183,11 +144,11 @@ def get_list():
 
     plist = []
     for (
-        pid,
-        student_check,
-        professor_check,
-        professor_need,
-        dicom_need,
+            pid,
+            student_check,
+            professor_check,
+            professor_need,
+            dicom_need,
     ) in cursor.fetchall():
         plist.append(
             {
@@ -202,7 +163,8 @@ def get_list():
     return plist
 
 
-@app.route("/images<pid>", methods=["GET"])
+@bp.route("/images<pid>", methods=["GET"])
+@login_required
 def update_images(pid):
     pid = int(pid)
 
@@ -225,21 +187,18 @@ def update_images(pid):
     )
 
 
-@app.route("/patient<pid>", methods=["GET", "POST"])
+@bp.route("/patient<pid>", methods=["GET", "POST"])
+@login_required
 def show_patient(pid):
-    role = get_role()
-    if 0 > role:
-        return redirect(url_for("show_login"))
-    #######################################################
     pid = int(pid)
     npid, hpid = next_pids(pid)
 
     if request.method == "POST":
         receive(request.form)
         if npid < 0:
-            return redirect(url_for("show_list"))
+            return redirect(url_for("panel.show_list"))
         else:
-            return redirect(url_for("show_patient", pid=npid))
+            return redirect(url_for("panel.show_patient", pid=npid))
 
     slices, send_time, rnd, professor_need, dicom_need = prepare_data(
         pid, wl=-400, ww=1500
@@ -253,37 +212,15 @@ def show_patient(pid):
         pid=pid,
         npid=npid,
         hpid=hpid,
-        role=role,
-        view_list=view_list,
+        view_list=config.view_list,
         professor_need=professor_need,
         dicom_need=dicom_need,
     )
 
 
-@app.route("/")
-@app.route("/list")
+@bp.route("/")
+@bp.route("/list")
+@login_required
 def show_list():
-    role = get_role()
-
-    if 0 > role:
-        return redirect(url_for("show_login"))
-    ############################################################
     plist = get_list()
     return render_template("list.html", plist=plist)
-
-
-@app.route("/login", methods=["GET", "POST"])
-def show_login():
-    if request.method == "POST":
-        if 0 < get_role(request.form["user"], request.form["pass"]):
-            resp = redirect(url_for("show_list"))
-            # resp = make_response("Ok")
-            resp.set_cookie("user", request.form["user"])
-            resp.set_cookie("pass", request.form["pass"])
-            return resp
-
-    return render_template("login.html")
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0")
