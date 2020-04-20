@@ -188,6 +188,7 @@ def get_list():
 
 
 @bp.route("/images<pid>", methods=["GET"])
+@login_required
 def update_images(pid):
     pid = int(pid)
 
@@ -211,6 +212,7 @@ def update_images(pid):
 
 
 @bp.route("/patient<pid>", methods=["GET", "POST"])
+@login_required
 def show_patient(pid):
     role = get_role()
     if 0 > role:
@@ -245,9 +247,9 @@ def show_patient(pid):
     )
 
 
-@login_required
 @bp.route("/")
 @bp.route("/list")
+@login_required
 def show_list():
     plist = get_list()
     return render_template("list.html", plist=plist)

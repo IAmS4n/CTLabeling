@@ -33,8 +33,8 @@ def create_app(test_config=None):
     app.register_blueprint(auth.bp)
     app.register_blueprint(panel.bp)
 
-    @app.route('/')
+    @app.route("/")
     def root():
-        return redirect(url_for('panel.show_list'))
+        return redirect(url_for("panel.show_list"))
 
     return app
