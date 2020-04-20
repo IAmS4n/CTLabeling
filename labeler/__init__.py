@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask
+from flask import Flask, url_for, redirect
 
 
 def create_app(test_config=None):
@@ -32,5 +32,9 @@ def create_app(test_config=None):
 
     app.register_blueprint(auth.bp)
     app.register_blueprint(panel.bp)
+
+    @app.route('/')
+    def root():
+        return redirect(url_for('panel.show_list'))
 
     return app
