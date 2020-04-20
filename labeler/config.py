@@ -1,4 +1,4 @@
-data_path = "/home/covidia/data/positive"
+data_path = "path to the root directory of data"
 view_list = [
     {"name": "Abdomen", "wl": 60, "ww": 400},
     {"name": "Angio", "wl": 300, "ww": 600},
