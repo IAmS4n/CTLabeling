@@ -136,9 +136,9 @@
 {% endblock %}
 {% block content %}
 <h1>Your Role:
-    {% if role==1 %}
+    {% if g.user.role==1 %}
     Student
-    {% elif role==2 %}
+    {% elif g.user.role==2 %}
     Professor
     {% else %}
     Unknown
@@ -146,7 +146,7 @@
     - Patient ID:{{ pid }}</h1>
 
 <div class="sidenav">
-    <h1 style="color: yellow;text-align: center;font-weight: bold;">Menu</h1>
+    <h1 style="color: white;text-align: center;font-weight: bold;">Menu</h1>
     <a href="list">List</a>
     {% if hpid>=0 %}
     <a href="patient{{ hpid }}">First Patient</a>
@@ -156,7 +156,7 @@
     <a href="patient{{ npid }}">Next Patient</a>
     {% endif %}
     <hr>
-    <h1 style="color: yellow;text-align: center;font-weight: bold;">View</h1>
+    <h1 style="color: white;text-align: center;font-weight: bold;">View</h1>
     {% for view in view_list %}
     <a href="#" id='view_{{view.name}}'>{{view.name}}</a>
     {% endfor %}
@@ -205,7 +205,7 @@
                     </button>
                 </th>
                 <th>
-                    {% if role==1 %}
+                    {% if g.user.role==1 %}
                     <input type="checkbox" id="professor_need" name="professor_need" value="1"
                            {% if professor_need %}
                            checked

@@ -34,23 +34,38 @@ def register():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        db = get_db()
-        error = None
+        try:
+            role_str = request.form["role"]
+            assert role_str in ["Student", "Professor"]
+        except:
+            role_str = False
 
-        if not username:
+        db = get_db()
+
+        error = None
+        if not role_str:
+            error = "Role is required."
+        elif not username:
             error = "Username is required."
         elif not password:
             error = "Password is required."
         elif (
-            db.execute("SELECT id FROM user WHERE username = ?", (username,)).fetchone()
-            is not None
+                db.execute("SELECT id FROM user WHERE username = ?", (username,)).fetchone()
+                is not None
         ):
             error = "User {} is already registered.".format(username)
 
         if error is None:
+            if role_str == "Student":
+                role = 1
+            elif role_str == "Professor":
+                role = 2
+            else:
+                raise
+
             db.execute(
-                "INSERT INTO user (username, password) VALUES (?, ?)",
-                (username, generate_password_hash(password)),
+                "INSERT INTO user (username, password, role) VALUES (?, ?, ?)",
+                (username, generate_password_hash(password), role),
             )
             db.commit()
             return redirect(url_for("auth.login"))
@@ -89,13 +104,13 @@ def login():
 @bp.route("/logout")
 def logout():
     session.clear()
-    return redirect(url_for("index"))
+    return redirect(url_for("auth.login"))
 
 
-def login_required(view, min_role: int = 0):
+def login_required(view, min_role: int = 1):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
-        if g.user is None or g.user.role < min_role:
+        if g.user is None or g.user["role"] < min_role:
             return redirect(url_for("auth.login"))
 
         return view(**kwargs)

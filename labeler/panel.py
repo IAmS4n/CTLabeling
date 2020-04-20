@@ -4,6 +4,7 @@ import random
 import time
 
 from flask import Blueprint
+from flask import g
 from flask import render_template, request, redirect, url_for
 
 from labeler import utils, config
@@ -13,31 +14,6 @@ from labeler.db import get_db
 
 bp = Blueprint("panel", __name__, url_prefix="/panel")
 
-view_list = [
-    {"name": "Abdomen", "wl": 60, "ww": 400},
-    {"name": "Angio", "wl": 300, "ww": 600},
-    {"name": "Bone", "wl": 300, "ww": 1500},
-    {"name": "Brain", "wl": 40, "ww": 80},
-    {"name": "Chest", "wl": 40, "ww": 400},
-    {"name": "Lungs", "wl": -400, "ww": 1500},
-]
-
-
-def get_role(user=None, password=None):
-    if user is None and password is None:
-        try:
-            user = request.cookies.get("user")
-            password = request.cookies.get("pass")
-        except:
-            return -1
-
-    if config.student["user"] == user and config.student["pass"] == password:
-        return 1
-    elif config.professor["user"] == user and config.professor["pass"] == password:
-        return 2
-
-    return -1
-
 
 def receive(form):
     sqlite_connection = get_db()
@@ -45,7 +21,7 @@ def receive(form):
 
     # print(form)
     pid = int(form["pid"])
-    role = get_role()
+    role = g.user["role"]
 
     send_time = form["send_time"]
     receive_time = time.time()
@@ -129,17 +105,17 @@ def prepare_data(pid, wl, ww):
 
 
 def next_pids(pid):
-    role = get_role()
+    role = g.user["role"]
 
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
     if role == 1:
         query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where (professor_check = 0  AND student_check = 0) OR pid = ?) where pid=?;"""
-        query_hpid = """SELECT pid from samples WHERE professor_check = 0  AND student_check = 0 ORDER BY priority DESC, pid ASC LIMIT 1"""
+        query_hpid = """SELECT pid from samples WHERE professor_check = 0  AND student_check = 0 ORDER BY priority DESC, pid ASC LIMIT 1;"""
     else:
         query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where professor_need = 1 OR pid = ?) where pid=?;"""
-        query_hpid = """SELECT pid from samples WHERE professor_need = 1 ORDER BY priority DESC, pid ASC LIMIT 1"""
+        query_hpid = """SELECT pid from samples WHERE professor_need = 1 ORDER BY priority DESC, pid ASC LIMIT 1;"""
 
     cursor.execute(query_npid, (pid, pid))
     res = cursor.fetchone()
@@ -168,11 +144,11 @@ def get_list():
 
     plist = []
     for (
-        pid,
-        student_check,
-        professor_check,
-        professor_need,
-        dicom_need,
+            pid,
+            student_check,
+            professor_check,
+            professor_need,
+            dicom_need,
     ) in cursor.fetchall():
         plist.append(
             {
@@ -214,19 +190,15 @@ def update_images(pid):
 @bp.route("/patient<pid>", methods=["GET", "POST"])
 @login_required
 def show_patient(pid):
-    role = get_role()
-    if 0 > role:
-        return redirect(url_for("show_login"))
-    #######################################################
     pid = int(pid)
     npid, hpid = next_pids(pid)
 
     if request.method == "POST":
         receive(request.form)
         if npid < 0:
-            return redirect(url_for("show_list"))
+            return redirect(url_for("panel.show_list"))
         else:
-            return redirect(url_for("show_patient", pid=npid))
+            return redirect(url_for("panel.show_patient", pid=npid))
 
     slices, send_time, rnd, professor_need, dicom_need = prepare_data(
         pid, wl=-400, ww=1500
@@ -240,8 +212,7 @@ def show_patient(pid):
         pid=pid,
         npid=npid,
         hpid=hpid,
-        role=role,
-        view_list=view_list,
+        view_list=config.view_list,
         professor_need=professor_need,
         dicom_need=dicom_need,
     )

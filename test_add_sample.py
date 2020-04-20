@@ -1,11 +1,9 @@
 import json
 import sqlite3
 
-from labeler import config
-
 
 def add(path, zs, priority):
-    db = sqlite3.connect(config.db_path)
+    db = sqlite3.connect("./instance/ct.sqlite")
     cursor = db.cursor()
 
     query = """INSERT INTO samples (path, zs, priority, student_check, professor_check, professor_need) VALUES (?, ?, ?, 0, 0, 0);"""
