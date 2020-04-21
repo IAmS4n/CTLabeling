@@ -22,24 +22,25 @@ CREATE TABLE samples
     professor_check INTEGER NOT NULL DEFAULT 0,
     professor_need  INTEGER NOT NULL DEFAULT 0,
     dicom_need      INTEGER NOT NULL DEFAULT 0,
-    positive_zs     TEXT
+    zs_result       TEXT
 );
 
 CREATE TABLE log_send
 (
     pid       INTEGER,
+    uid       INTEGER,
+    rnd       TEXT,
     send_time TEXT,
     path      TEXT,
-    details   TEXT,
-    rnd       TEXT
+    details   TEXT
 );
 
 CREATE TABLE log_receive
 (
     pid          INTEGER,
+    uid          INTEGER,
+    rnd          TEXT,
     send_time    TEXT,
     receive_time TEXT,
-    details      TEXT,
-    rnd          TEXT,
-    role         INTEGER
+    details      TEXT
 );

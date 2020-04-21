@@ -5,18 +5,18 @@
 {% endblock %}
 {% block style %}
 <style>
-    input[type=checkbox] + label {
+    input[type=radio] + label {
         display: block;
         margin: 0.2em;
         cursor: pointer;
         padding: 0.2em;
     }
 
-    input[type=checkbox] {
+    input[type=radio] {
         display: none;
     }
 
-    input[type=checkbox] + label:before {
+    input[type=radio] + label:before {
         content: "\2714";
         border: 0.1em solid #000;
         border-radius: 0.2em;
@@ -31,22 +31,22 @@
         transition: .2s;
     }
 
-    input[type=checkbox] + label:active:before {
+    input[type=radio] + label:active:before {
         transform: scale(0);
     }
 
-    input[type=checkbox]:checked + label:before {
+    input[type=radio]:checked + label:before {
         background-color: MediumSeaGreen;
         border-color: MediumSeaGreen;
         color: #fff;
     }
 
-    input[type=checkbox]:disabled + label:before {
+    input[type=radio]:disabled + label:before {
         transform: scale(1);
         border-color: #aaa;
     }
 
-    input[type=checkbox]:checked:disabled + label:before {
+    input[type=radio]:checked:disabled + label:before {
         transform: scale(1);
         background-color: #bfb;
         border-color: #bfb;
@@ -186,12 +186,15 @@
                     </a>
                 </th>
                 <th>
-                    <input type="checkbox" id="z{{ slice.z }}" name="z{{ slice.z }}" value="1"
-                           {% if slice.checked %}
-                           checked
-                           {% endif %}
-                    >
-                    <label for="z{{ slice.z }}">COVID-19 Positive</label>
+
+                    <input type="radio" value="positive" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_positive" {% if
+                           slice.positive %} checked {% endif %}>
+                    <label for="z_{{ slice.z }}_positive">Positive</label>
+
+                    <input type="radio" value="negative" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_negative" {% if
+                           slice.negative %} checked {% endif %}>
+                    <label for="z_{{ slice.z }}_negative">Negative</label>
+
                 </th>
             </tr>
             {% endfor %}
@@ -236,7 +239,7 @@
 
     {% for view in view_list %}
     document.getElementById('view_{{view.name}}').onclick = function () {
-        selected_view_item.style.textShadow="";
+        selected_view_item.style.textShadow = "";
         selected_view_item = document.getElementById('view_{{view.name}}');
         selected_view_item.style.textShadow = "0px 0px 5px red";
 

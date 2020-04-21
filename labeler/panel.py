@@ -11,6 +11,7 @@ from labeler import utils, config
 from labeler.auth import login_required
 from labeler.ct import get_ct
 from labeler.db import get_db
+from labeler.utils import int_key_load
 
 bp = Blueprint("panel", __name__, url_prefix="/panel")
 
@@ -29,18 +30,20 @@ def receive(form):
     details = json.dumps(form)
 
     # save log
-    query = """INSERT INTO log_receive (pid, send_time, receive_time, details, rnd, role) VALUES (?, ?, ?, ?, ?, ?);"""
-    data_tuple = (pid, send_time, receive_time, details, rnd, role)
+    query = """INSERT INTO log_receive (pid, uid, rnd, send_time, receive_time, details) VALUES (?, ?, ?, ?, ?, ?);"""
+    data_tuple = (pid, g.user["id"], rnd, send_time, receive_time, details)
     cursor.execute(query, data_tuple)
     sqlite_connection.commit()
 
     # update samples
-    positive_zs = []
+    zs_result = {}
     for name in form.keys():
-        if name.startswith("z"):
-            z = int(name[1:])
-            positive_zs.append(z)
-    positive_zs = json.dumps(positive_zs)
+        if name.startswith("z") and "_" in name:
+            tmp = name.split("_")
+            assert (len(tmp) == 3) and (form[name] in ["positive", "negative"])
+            zs_result[int(tmp[1])] = (form[name] == "positive")
+
+    zs_result = json.dumps(zs_result)  # keys will cast to str
 
     if ("professor_need" in form) and form["professor_need"] == "1":
         professor_need = 1
@@ -53,10 +56,10 @@ def receive(form):
         dicom_need = 0
 
     if role == 1:
-        query = """Update samples set student_check = 1, professor_need = ?, dicom_need = ?, positive_zs = ? where pid = ?"""
+        query = """Update samples set student_check = 1, professor_need = ?, dicom_need = ?, zs_result = ? where pid = ?"""
     else:
-        query = """Update samples set professor_check = 1, professor_need = ?, dicom_need = ?, positive_zs = ? where pid = ?"""
-    cursor.execute(query, (professor_need, dicom_need, positive_zs, pid))
+        query = """Update samples set professor_check = 1, professor_need = ?, dicom_need = ?, zs_result = ? where pid = ?"""
+    cursor.execute(query, (professor_need, dicom_need, zs_result, pid))
     sqlite_connection.commit()
 
     cursor.close()
@@ -67,14 +70,15 @@ def prepare_data(pid, wl, ww):
     cursor = sqliteConnection.cursor()
 
     # load old values
-    query = """SELECT path, zs, professor_need, dicom_need, positive_zs from samples where pid = ?;"""
+    query = """SELECT path, zs, professor_need, dicom_need, zs_result from samples where pid = ?;"""
     cursor.execute(query, (pid,))
-    path, zs, professor_need, dicom_need, positive_zs = cursor.fetchone()
-    zs = json.loads(zs)
-    if positive_zs is not None:
-        positive_zs = json.loads(positive_zs)
-    else:
-        positive_zs = []
+    path, zs, professor_need, dicom_need, zs_result = cursor.fetchone()
+    zs = int_key_load(zs)
+
+    try:
+        zs_result = int_key_load(zs_result)
+    except:
+        zs_result = {}
 
     # new form values
     rnd = random.getrandbits(32)
@@ -83,20 +87,26 @@ def prepare_data(pid, wl, ww):
     mini_slices = []
     slices = []
     full_path = os.path.join(config.data_path, path)
+    final_z = list(set(zs_result.keys()) | set(zs))
+    ct = get_ct(full_path, wl=wl, ww=ww, z_list=final_z)
 
-    ct = get_ct(full_path, wl=wl, ww=ww, z_list=zs)
-    for z, s in zip(zs, ct):
+    for z, s in zip(final_z, ct):
         img, thumbnail = utils.encode(s)
-        slices.append({"z": z, "img": img, "checked": z in positive_zs})
-        mini_slices.append(
-            {"z": z, "thumbnail": thumbnail, "checked": z in positive_zs}
-        )
+        row = {"z": z, "img": img}
+        if z in zs_result:
+            if zs_result[z]:
+                row["positive"] = True
+            else:
+                row["negative"] = True
+        slices.append(row)
+
+        mini_slices.append({"z": z, "thumbnail": thumbnail, "status": zs_result.get(z, None)})
 
     details = json.dumps(mini_slices)
 
     # save log
-    query = """INSERT INTO log_send (pid, send_time, path, details, rnd) VALUES (?, ?, ?, ?, ?);"""
-    data_tuple = (pid, send_time, path, details, rnd)
+    query = """INSERT INTO log_send (pid, uid, rnd, send_time, path, details) VALUES (?, ?, ?, ?, ?, ?);"""
+    data_tuple = (pid, g.user["id"], rnd, send_time, path, details)
     cursor.execute(query, data_tuple)
     sqliteConnection.commit()
 
