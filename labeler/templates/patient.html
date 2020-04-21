@@ -101,6 +101,7 @@
             font-size: 15px;
         }
     }
+
 </style>
 
 {% endblock %}
@@ -127,8 +128,9 @@
     {% endif %}
     <hr>
     <h1 style="color: white;text-align: center;font-weight: bold;">View</h1>
+
     {% for view in view_list %}
-    <a href="#" id='view_{{view.name}}'>{{view.name}}</a>
+    <a id='view_{{view.name}}'>{{view.name}}</a>
     {% endfor %}
 </div>
 
@@ -146,11 +148,11 @@
                     {{ slice.z }}
                 </th>
                 <th>
-                    <a onclick="additional_slices({{slice.z}})">
+                    <a onclick="additional_slices({{slice.z}}, true)">
                         <img id="img_{{slice.z}}"
                              {% if slice.img %} src="{{ slice.img }}" {% else %} src="" {% endif %}
                              class="thumbnail"
-                             onmouseover='document.getElementById("main_img").src = document.getElementById("img_{{slice.z}}").src;'
+                             onmouseover='show_big({{slice.z}});'
                         >
                     </a>
 
@@ -205,9 +207,13 @@
 </div>
 
 <div class="sidenav right">
-    <img id="main_img" class="main_img">
+    <figure style="color: firebrick; text-align:center;">
+            <img id="main_img" class="main_img">
+            <figcaption id="main_img_cap">Move mouse over items</figcaption>
+    </figure>
 </div>
 <script type="text/javascript">
+    var additional_z_list = [];
     {% for view in view_list %}
     {% if view.name == "Lungs" %}
     var selected_view_item = document.getElementById('view_{{view.name}}');
@@ -238,10 +244,17 @@
         selected_view_wl = "{{view.wl}}";
         selected_view_ww = "{{view.ww}}";
         load_selected_view()
+
+        for (var i = 0; i < additional_z_list.length; i++) {
+            additional_slices(additional_z_list[i], false);
+        }
     }
     {% endfor %}
 
-    function additional_slices(z) {
+    function additional_slices(z, new_z) {
+        if (new_z) {
+            additional_z_list.push(z)
+        }
         var min_z = (z - 1).toString();
         var max_z = (z + 2).toString();
 
@@ -251,6 +264,12 @@
         document.getElementsByTagName("head")[0].appendChild(script);
         return false;
     }
+    function show_big(z_num) {
+        document.getElementById("main_img").src = document.getElementById("img_"+z_num).src;
+        document.getElementById("main_img_cap").textContent = "z: " + z_num;
+
+    }
+
 </script>
 
 {% endblock %}
