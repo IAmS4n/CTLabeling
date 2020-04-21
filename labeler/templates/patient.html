@@ -1,255 +1,257 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h1>{% block title %} {% endblock %}</h1>
+  <h1>{% block title %} {% endblock %}</h1>
 {% endblock %}
+
 {% block style %}
-<style>
+  <style>
     input[type=radio] + label {
-        display: block;
-        margin: 0.2em;
-        cursor: pointer;
-        padding: 0.2em;
+      display: block;
+      margin: 0.2em;
+      cursor: pointer;
+      padding: 0.2em;
     }
 
     input[type=radio] {
-        display: none;
+      display: none;
     }
 
     input[type=radio] + label:before {
-        content: "\2714";
-        border: 0.1em solid #000;
-        border-radius: 0.2em;
-        display: inline-block;
-        width: 1em;
-        height: 1em;
-        padding-left: 0.2em;
-        padding-bottom: 0.3em;
-        margin-right: 0.2em;
-        vertical-align: bottom;
-        color: transparent;
-        transition: .2s;
+      content: "\2714";
+      border: 0.1em solid #000;
+      border-radius: 0.2em;
+      display: inline-block;
+      width: 1em;
+      height: 1em;
+      padding-left: 0.2em;
+      padding-bottom: 0.3em;
+      margin-right: 0.2em;
+      vertical-align: bottom;
+      color: transparent;
+      transition: .2s;
     }
 
     input[type=radio] + label:active:before {
-        transform: scale(0);
+      transform: scale(0);
     }
 
     input[type=radio]:checked + label:before {
-        background-color: MediumSeaGreen;
-        border-color: MediumSeaGreen;
-        color: #fff;
+      background-color: MediumSeaGreen;
+      border-color: MediumSeaGreen;
+      color: #fff;
     }
 
     input[type=radio]:disabled + label:before {
-        transform: scale(1);
-        border-color: #aaa;
+      transform: scale(1);
+      border-color: #aaa;
     }
 
     input[type=radio]:checked:disabled + label:before {
-        transform: scale(1);
-        background-color: #bfb;
-        border-color: #bfb;
+      transform: scale(1);
+      background-color: #bfb;
+      border-color: #bfb;
     }
 
     .thumbnail {
-        max-width: 50%;
+      max-width: 50%;
     }
 
     /** LIGHTBOX MARKUP **/
 
     .lightbox {
-        /** Default lightbox to hidden */
-        display: none;
+      /** Default lightbox to hidden */
+      display: none;
 
-        /** Position and style */
-        position: fixed;
-        z-index: 999;
-        width: 100%;
-        height: 100%;
-        text-align: center;
-        top: 0;
-        left: 0;
-        background: rgba(0, 0, 0, 0.8);
+      /** Position and style */
+      position: fixed;
+      z-index: 999;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      top: 0;
+      left: 0;
+      background: rgba(0, 0, 0, 0.8);
     }
 
     .lightbox img {
-        /** Pad the lightbox image */
-        max-width: 90%;
-        max-height: 80%;
-        margin-top: 2%;
+      /** Pad the lightbox image */
+      max-width: 90%;
+      max-height: 80%;
+      margin-top: 2%;
     }
 
     .lightbox:target {
-        /** Remove default browser outline */
-        outline: none;
+      /** Remove default browser outline */
+      outline: none;
 
-        /** Unhide lightbox **/
-        display: block;
+      /** Unhide lightbox **/
+      display: block;
     }
 
     /* The sidebar menu */
     .sidenav {
-        height: 100%; /* Full-height: remove this if you want "auto" height */
-        width: 200px; /* Set the width of the sidebar */
-        position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-        z-index: 1; /* Stay on top */
-        top: 0; /* Stay at the top */
-        left: 0;
-        background-color: #111; /* Black */
-        overflow-x: hidden; /* Disable horizontal scroll */
-        padding-top: 20px;
+      height: 100%; /* Full-height: remove this if you want "auto" height */
+      width: 200px; /* Set the width of the sidebar */
+      position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+      z-index: 1; /* Stay on top */
+      top: 0; /* Stay at the top */
+      left: 0;
+      background-color: #111; /* Black */
+      overflow-x: hidden; /* Disable horizontal scroll */
+      padding-top: 20px;
     }
 
     /* The navigation menu links */
     .sidenav a {
-        padding: 6px 8px 6px 16px;
-        text-decoration: none;
-        font-size: 25px;
-        color: #818181;
-        display: block;
+      padding: 6px 8px 6px 16px;
+      text-decoration: none;
+      font-size: 25px;
+      color: #818181;
+      display: block;
     }
 
     /* When you mouse over the navigation links, change their color */
     .sidenav a:hover {
-        color: #f1f1f1;
+      color: #f1f1f1;
     }
 
     /* Style page content */
     .main {
-        margin-left: 20px; /* Same as the width of the sidebar */
-        padding: 0px 10px;
+      margin-left: 20px; /* Same as the width of the sidebar */
+      padding: 0 10px;
     }
 
     /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
     @media screen and (max-height: 450px) {
-        .sidenav {
-            padding-top: 15px;
-        }
+      .sidenav {
+        padding-top: 15px;
+      }
 
-        .sidenav a {
-            font-size: 18px;
-        }
+      .sidenav a {
+        font-size: 18px;
+      }
     }
-</style>
-
+  </style>
 {% endblock %}
+
 {% block content %}
-<h1>Your Role:
+  <h1>Your Role:
     {% if g.user.role==1 %}
-    Student
+      Student
     {% elif g.user.role==2 %}
-    Professor
+      Professor
     {% else %}
-    Unknown
+      Unknown
     {% endif %}
     - Patient ID:{{ pid }}</h1>
 
-<div class="sidenav">
+  <div class="sidenav">
     <h1 style="color: white;text-align: center;font-weight: bold;">Menu</h1>
-    <a href="list">List</a>
+    <a href="{{ url_for('panel.list') }}">List</a>
     {% if hpid>=0 %}
-    <a href="patient{{ hpid }}">First Patient</a>
+      <a href="{{ url_for('panel.list', pid=hpid) }}">First Patient</a>
     {% endif %}
 
     {% if npid>=0 %}
-    <a href="patient{{ npid }}">Next Patient</a>
+      <a href="{{ url_for('panel.list', pid=npid) }}">Next Patient</a>
     {% endif %}
     <hr>
-    <h1 style="color: white;text-align: center;font-weight: bold;">View</h1>
+    <h1 style="color: white;text-align: center;font-weight: bold;">Views</h1>
     {% for view in view_list %}
-    <a href="#" id='view_{{view.name}}'>{{view.name}}</a>
+      <a href="#" id='view_{{ view.name }}'>{{ view.name }}</a>
     {% endfor %}
-</div>
+  </div>
 
-<!-- Page content -->
-<div class="main">
-    <form action="patient{{ pid }}" method="post">
-        <input type="hidden" id="send_time" name="send_time" value="{{send_time}}">
-        <input type="hidden" id="rnd" name="rnd" value="{{rnd}}">
-        <input type="hidden" id="pid" name="pid" value="{{pid}}">
-        <table>
-            {% for slice in slices %}
-            <tr>
-                <th>
-                    {{ slice.z }}
-                </th>
-                <th>
-                    <!-- thumbnail image wrapped in a link -->
-                    <a href="#img{{ loop.index }}">
-                        <img id="img_{{slice.z}}_small" src="" class="thumbnail">
-                    </a>
-                    <!-- lightbox container hidden with CSS -->
-                    <a href="#_" class="lightbox" id="img{{ loop.index }}">
-                        <img id="img_{{slice.z}}_big" src="{{ slice.img }}"
-                             onload='document.getElementById("img_{{slice.z}}_small").src = document.getElementById("img_{{slice.z}}_big").src;'>
-                    </a>
-                </th>
-                <th>
+  <!-- Page content -->
+  <div class="main">
+    <form method="post">
+      <input type="hidden" id="send_time" name="send_time" value="{{ send_time }}">
+      <input type="hidden" id="rnd" name="rnd" value="{{ rnd }}">
+      <input type="hidden" id="pid" name="pid" value="{{ pid }}">
+      <table>
+        {% for slice in slices %}
+          <tr>
+            <th>
+              {{ slice.z }}
+            </th>
+            <th>
+              <!-- thumbnail image wrapped in a link -->
+              <a href="#img{{ loop.index }}">
+                <img id="img_{{ slice.z }}_small" src="" class="thumbnail">
+              </a>
+              <!-- lightbox container hidden with CSS -->
+              <a href="#_" class="lightbox" id="img{{ loop.index }}">
+                <img id="img_{{ slice.z }}_big" src="{{ slice.img }}"
+                     onload='document.getElementById("img_{{ slice.z }}_small").src = document.getElementById("img_{{ slice.z }}_big").src;'>
+              </a>
+            </th>
+            <th>
 
-                    <input type="radio" value="positive" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_positive" {% if
+              <input type="radio" value="positive" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_positive" {% if
                            slice.positive %} checked {% endif %}>
-                    <label for="z_{{ slice.z }}_positive">Positive</label>
+              <label for="z_{{ slice.z }}_positive">Positive</label>
 
-                    <input type="radio" value="negative" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_negative" {% if
+              <input type="radio" value="negative" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_negative" {% if
                            slice.negative %} checked {% endif %}>
-                    <label for="z_{{ slice.z }}_negative">Negative</label>
+              <label for="z_{{ slice.z }}_negative">Negative</label>
 
-                </th>
-            </tr>
-            {% endfor %}
+            </th>
+          </tr>
+        {% endfor %}
 
-            <tr>
-                <th></th>
-                <th style="margin: auto;text-align:center">
-                    <button type="submit"
-                            style="display: block;margin: auto;background-color: crimson;color: white;">
-                        Save & Next
-                    </button>
-                </th>
-                <th>
-                    {% if g.user.role==1 %}
-                    <input type="checkbox" id="professor_need" name="professor_need" value="1"
-                           {% if professor_need %}
-                           checked
-                           {% endif %}
-                    >
-                    <label for="professor_need">Needs Professor</label>
-                    {% endif %}
+        <tr>
+          <th></th>
+          <th style="margin: auto;text-align:center">
+            <button type="submit"
+                    style="display: block;margin: auto;background-color: crimson;color: white;">
+              Save & Next
+            </button>
+          </th>
+          <th>
+            {% if g.user.role==1 %}
+              <input type="checkbox" id="professor_need" name="professor_need" value="1"
+                {% if professor_need %}
+                     checked
+                {% endif %}
+              >
+              <label for="professor_need">Needs Professor</label>
+            {% endif %}
 
-                    <input type="checkbox" id="dicom_need" name="dicom_need" value="1"
-                           {% if dicom_need %}
-                           checked
-                           {% endif %}
-                    >
-                    <label for="dicom_need">Needs DICOM</label>
-                </th>
-            </tr>
-        </table>
+            <input type="checkbox" id="dicom_need" name="dicom_need" value="1"
+              {% if dicom_need %}
+                   checked
+              {% endif %}
+            >
+            <label for="dicom_need">Needs DICOM</label>
+          </th>
+        </tr>
+      </table>
     </form>
-</div>
+  </div>
 
-<script type="text/javascript">
-    var selected_view_item = document.getElementById('view_Lungs');
-    document.getElementById('view_Lungs').style.textShadow = "0px 0px 5px green";
+  <script type="text/javascript">
+      var selected_view_item = document.getElementById('view_Lungs');
+      selected_view_item.style.textShadow = "0 0 5px green";
 
-    function change_selected_view() {
-        selected_view_item.style.textShadow = "0px 0px 5px green";
-    };
+      function change_selected_view() {
+          selected_view_item.style.textShadow = "0 0 5px green";
+      }
 
-    {% for view in view_list %}
-    document.getElementById('view_{{view.name}}').onclick = function () {
-        selected_view_item.style.textShadow = "";
-        selected_view_item = document.getElementById('view_{{view.name}}');
-        selected_view_item.style.textShadow = "0px 0px 5px red";
+      {% for view in view_list %}
+          document.getElementById('view_{{view.name}}').onclick = function (event) {
+              event.preventDefault()
+              selected_view_item.style.textShadow = "";
+              selected_view_item = document.getElementById('view_{{view.name}}');
+              selected_view_item.style.textShadow = "0px 0px 5px red";
 
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "images{{pid}}?wl={{view.wl}}&ww={{view.ww}}";
-        document.getElementsByTagName("head")[0].appendChild(script);
-        return false;
-    }
-    {% endfor %}
-</script>
+              const script = document.createElement("script");
+              script.type = "text/javascript";
+              script.src = "images{{pid}}?wl={{view.wl}}&ww={{view.ww}}";
+              document.getElementsByTagName("head")[0].appendChild(script);
+              return false;
+          }
+      {% endfor %}
+  </script>
 
 {% endblock %}
