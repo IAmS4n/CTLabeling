@@ -1,275 +1,360 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h1>{% block title %} {% endblock %}</h1>
+  <h1>{% block title %} {% endblock %}</h1>
 {% endblock %}
 {% block style %}
-<style>
-    .thumbnail {
-        max-width: 85%;
+  <style>
+    :root {
+      --primary-c: #2196F3;
+      --secondary-c: #B2D7F5;
+
+      --white: #FDFBFB;
+
+      --text: #082943;
+      --bg: var(--primary-c);
     }
+
+
+    ul {
+      list-style-type: none;
+      padding-left: 50px;
+      margin: 0;
+    }
+
+    li {
+      display: block;
+      position: relative;
+      padding: 20px 0;
+    }
+
+    .thumbnail {
+      max-width: 85%;
+    }
+
     .main_img {
-        width: 95%;
+      width: 95%;
     }
 
     /** LIGHTBOX MARKUP **/
 
     .lightbox {
-        /** Default lightbox to hidden */
-        display: none;
+      /** Default lightbox to hidden */
+      display: none;
 
-        /** Position and style */
-        position: fixed;
-        z-index: 999;
-        width: 100%;
-        height: 100%;
-        text-align: center;
-        top: 0;
-        left: 0;
-        background: rgba(0, 0, 0, 0.8);
+      /** Position and style */
+      position: fixed;
+      z-index: 999;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      top: 0;
+      left: 0;
+      background: rgba(0, 0, 0, 0.8);
     }
 
     .lightbox img {
-        /** Pad the lightbox image */
-        max-width: 90%;
-        max-height: 80%;
-        margin-top: 2%;
+      /** Pad the lightbox image */
+      max-width: 90%;
+      max-height: 80%;
+      margin-top: 2%;
     }
 
     .lightbox:target {
-        /** Remove default browser outline */
-        outline: none;
+      /** Remove default browser outline */
+      outline: none;
 
-        /** Unhide lightbox **/
-        display: block;
+      /** Unhide lightbox **/
+      display: block;
     }
 
     /* The sidebar menu */
     .left {
-        height: 100%; /* Full-height: remove this if you want "auto" height */
-        width: 200px; /* Set the width of the sidebar */
-        position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-        z-index: 1; /* Stay on top */
-        top: 0; /* Stay at the top */
-        left: 0;
-        background-color: #111; /* Black */
-        overflow-x: hidden; /* Disable horizontal scroll */
-        padding-top: 20px;
+      height: 100%; /* Full-height: remove this if you want "auto" height */
+      width: 200px; /* Set the width of the sidebar */
+      position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+      z-index: 1; /* Stay on top */
+      top: 0; /* Stay at the top */
+      left: 0;
+      background-color: #111; /* Black */
+      overflow-x: hidden; /* Disable horizontal scroll */
+      padding-top: 20px;
     }
+
     .right {
-        height: 100%; /* Full-height: remove this if you want "auto" height */
-        width: 50%; /* Set the width of the sidebar */
-        position: fixed; /* Fixed Sidebar (stay in place on scroll) */
-        z-index: 1; /* Stay on top */
-        top: 0; /* Stay at the top */
-        right: 0;
-        background-color: #111; /* Black */
-        overflow-x: hidden; /* Disable horizontal scroll */
-        padding-top: 20px;
+      height: 100%; /* Full-height: remove this if you want "auto" height */
+      width: 50%; /* Set the width of the sidebar */
+      position: fixed; /* Fixed Sidebar (stay in place on scroll) */
+      z-index: 1; /* Stay on top */
+      top: 0; /* Stay at the top */
+      right: 0;
+      background-color: #111; /* Black */
+      overflow-x: hidden; /* Disable horizontal scroll */
+      padding-top: 20px;
     }
+
     /* Style page content */
     .main {
-        width: 40%;
-        margin-left: 20px; /* Same as the width of the sidebar */
-        margin-right: 20px; /* Same as the width of the sidebar */
-        padding: 0px 10px;
+      width: 40%;
+      margin-left: 20px; /* Same as the width of the sidebar */
+      margin-right: 20px; /* Same as the width of the sidebar */
+      padding: 0 10px;
     }
 
     /* The navigation menu links */
     .sidenav a {
-        padding: 6px 8px 6px 16px;
-        text-decoration: none;
-        font-size: 25px;
-        color: #818181;
-        display: block;
+      padding: 6px 8px 6px 16px;
+      text-decoration: none;
+      font-size: 25px;
+      color: #818181;
+      display: block;
     }
 
     /* When you mouse over the navigation links, change their color */
     .sidenav a:hover {
-        color: #f1f1f1;
+      color: #f1f1f1;
     }
-
 
 
     /* On smaller screens, where height is less than 450px, change the style of the sidebar (less padding and a smaller font size) */
     @media screen and (max-height: 450px) {
-        .sidenav {
-            padding-top: 13px;
-        }
+      .sidenav {
+        padding-top: 13px;
+      }
 
-        .sidenav a {
-            font-size: 15px;
-        }
+      .sidenav a {
+        font-size: 15px;
+      }
     }
 
-</style>
+    /* Card
+    –––––––––––––––––––––––––––––––––––––––––––––––––– */
+    .card {
+      display: flex;
+      flex-direction: column;
+      background: var(--white);
+      width: 300px;
+      padding: 20px 25px;
+      border-radius: 20px;
+      box-shadow: 0 19px 38px rgba(0, 0, 0, 0.13);
+    }
+
+
+    /* Radio Button
+    –––––––––––––––––––––––––––––––––––––––––––––––––– */
+    input[type=radio] {
+      position: absolute;
+      visibility: hidden;
+    }
+
+    label {
+      cursor: pointer;
+      font-weight: 400;
+    }
+
+    .check {
+      width: 30px;
+      height: 30px;
+      position: absolute;
+      border-radius: 50%;
+      transition: transform .6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    }
+
+    /* Reset */
+    input.one ~ .check {
+      transform: translate(-50px, -25px);
+      background: var(--secondary-c);
+    }
+
+    input.two ~ .check {
+      transform: translate(-50px, -83px);
+      background: var(--primary-c);
+      box-shadow: 0 6px 12px rgba(33, 150, 243, 0.35);
+    }
+
+    /* Radio Input #1 */
+    input.one:checked ~ .check {
+      transform: translate(-50px, 33px);
+    }
+
+    /* Radio Input #2  */
+    input.two:checked ~ .check {
+      transform: translate(-50px, -25px);
+    }
+
+  </style>
 
 {% endblock %}
 {% block content %}
-<h3>Your Role:
+  <h3>Your Role:
     {% if g.user.role==1 %}
-    Student
+      Student
     {% elif g.user.role==2 %}
-    Professor
+      Professor
     {% else %}
-    Unknown
+      Unknown
     {% endif %}
     - Patient ID:{{ pid }}</h3>
 
-<div class="sidenav left">
+  <div class="sidenav left">
     <h1 style="color: white;text-align: center;font-weight: bold;">Menu</h1>
     <a href="list">List</a>
     {% if hpid>=0 %}
-    <a href="patient{{ hpid }}">First Patient</a>
+      <a href="patient{{ hpid }}">First Patient</a>
     {% endif %}
 
     {% if npid>=0 %}
-    <a href="patient{{ npid }}">Next Patient</a>
+      <a href="patient{{ npid }}">Next Patient</a>
     {% endif %}
     <hr>
     <h1 style="color: white;text-align: center;font-weight: bold;">View</h1>
-
     {% for view in view_list %}
-    <a id='view_{{view.name}}'>{{view.name}}</a>
+      <a href="#" id='view_{{ view.name }}'>{{ view.name }}</a>
     {% endfor %}
-</div>
+  </div>
 
-<!-- Page content -->
-<div class="main">
+  <!-- Page content -->
+  <div class="main">
     <form action="patient{{ pid }}" method="post">
-        <input type="hidden" id="send_time" name="send_time" value="{{send_time}}">
-        <input type="hidden" id="rnd" name="rnd" value="{{rnd}}">
-        <input type="hidden" id="pid" name="pid" value="{{pid}}">
-        <table>
-            {% for slice in slices %}
+      <input type="hidden" id="send_time" name="send_time" value="{{ send_time }}">
+      <input type="hidden" id="rnd" name="rnd" value="{{ rnd }}">
+      <input type="hidden" id="pid" name="pid" value="{{ pid }}">
+      <table>
+        {% for slice in slices %}
 
-            <tr id="tbl_row_{{slice.z}}" style=" {% if not slice.img %} display: none; {% endif %} ">
-                <th>
-                    {{ slice.z }}
-                </th>
-                <th>
-                    <a onclick="additional_slices({{slice.z}}, true)" style="cursor: ns-resize;">
-                        <img id="img_{{slice.z}}"
-                             {% if slice.img %} src="{{ slice.img }}" {% else %} src="" {% endif %}
-                             class="thumbnail"
-                             onmouseover='show_big({{slice.z}});'
-                        >
-                    </a>
+          <tr id="tbl_row_{{ slice.z }}" style=" {% if not slice.img %} display: none; {% endif %} ">
+            <th>
+              {{ slice.z }}
+            </th>
+            <th>
+              <a onclick="additional_slices({{ slice.z }})">
+                <img id="img_{{ slice.z }}"
+                  {% if slice.img %} src="{{ slice.img }}" {% else %} src="" {% endif %}
+                     class="thumbnail"
+                     onmouseover='document.getElementById("main_img").src = document.getElementById("img_{{ slice.z }}").src;'
+                >
+              </a>
 
-                    <br>
+              <br>
 
-                    <div>
+              <div class="card">
+                <ul>
+                  <li>
                     <input type="radio" value="positive" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_positive"
-                           {% if slice.positive %} checked {% endif %}>
-                    Positive
-                    </div>
-                    <div>
+                      {% if slice.positive %} checked {% endif %} class="one"/>
+                    <label for="z_{{ slice.z }}_positive">Positive</label>
+                    <div class="check"></div>
+                  </li>
+                  <li>
                     <input type="radio" value="negative" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_negative"
-                           {% if slice.negative %} checked {% endif %}>
-                    Negative
-                    </div>
+                      {% if slice.negative %} checked {% endif %} class="two"/>
+                    <label for="z_{{ slice.z }}_negative">Negative</label>
+                    <div class="check"></div>
+                  </li>
+                </ul>
+              </div>
 
+            </th>
+          </tr>
+        {% endfor %}
 
-                </th>
-            </tr>
-            {% endfor %}
+        <tr>
+          <th></th>
+          <th>
+            {% if g.user.role==1 %}
+              <input type="checkbox" id="professor_need" name="professor_need" value="1"
+                {% if professor_need %}
+                     checked
+                {% endif %}
+              >
+              <label for="professor_need">Needs Professor</label>
+              <br>
+            {% endif %}
 
-            <tr>
-                <th></th>
-                <th>
-                    {% if g.user.role==1 %}
-                    <input type="checkbox" id="professor_need" name="professor_need" value="1"
-                           {% if professor_need %}
-                           checked
-                           {% endif %}
-                    >
-                    <label for="professor_need">Needs Professor</label>
-                    <br>
-                    {% endif %}
+            <input type="checkbox" id="dicom_need" name="dicom_need" value="1"
+              {% if dicom_need %}
+                   checked
+              {% endif %}
+            >
+            <label for="dicom_need">Needs DICOM</label>
 
-                    <input type="checkbox" id="dicom_need" name="dicom_need" value="1"
-                           {% if dicom_need %}
-                           checked
-                           {% endif %}
-                    >
-                    <label for="dicom_need">Needs DICOM</label>
+            <br>
 
-                    <br>
-
-                    <button type="submit"
-                            style="display: block;margin: auto;background-color: crimson;color: white;">
-                        Save & Next
-                    </button>
-                </th>
-            </tr>
-        </table>
+            <button type="submit"
+                    style="display: block;margin: auto;background-color: crimson;color: white;">
+              Save & Next
+            </button>
+          </th>
+        </tr>
+      </table>
     </form>
-</div>
+  </div>
 
-<div class="sidenav right">
+  <div class="sidenav right">
     <figure style="color: firebrick; text-align:center;">
-            <img id="main_img" class="main_img">
-            <figcaption id="main_img_cap">Move mouse over items</figcaption>
+      <img id="main_img" class="main_img">
+      <figcaption id="main_img_cap">Move mouse over items</figcaption>
     </figure>
-</div>
-<script type="text/javascript">
-    var additional_z_list = [];
-    {% for view in view_list %}
-    {% if view.name == "Lungs" %}
-    var selected_view_item = document.getElementById('view_{{view.name}}');
-    var selected_view_wl = "{{view.wl}}";
-    var selected_view_ww = "{{view.ww}}";
-    {% endif %}
-    {% endfor %}
-    selected_view_item.style.textShadow = "0px 0px 5px green";
+  </div>
+  <script type="text/javascript">
+      var additional_z_list = [];
+      {% for view in view_list %}
+          {% if view.name == "Lungs" %}
+              var selected_view_item = document.getElementById('view_{{view.name}}');
+              var selected_view_wl = "{{view.wl}}";
+              var selected_view_ww = "{{view.ww}}";
+          {% endif %}
+      {% endfor %}
+      selected_view_item.style.textShadow = "0px 0px 5px green";
 
-    function change_selected_view() {
-        selected_view_item.style.textShadow = "0px 0px 5px green";
-    }
+      function change_selected_view() {
+          selected_view_item.style.textShadow = "0px 0px 5px green";
+      }
 
-    function load_selected_view() {
-        selected_view_item.style.textShadow = "0px 0px 5px red";
+      function load_selected_view() {
+          selected_view_item.style.textShadow = "0px 0px 5px red";
 
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "slices{{pid}}?wl=" + selected_view_wl + "&ww=" + selected_view_ww;
-        document.getElementsByTagName("head")[0].appendChild(script);
-        return false;
-    }
+          var script = document.createElement("script");
+          script.type = "text/javascript";
+          script.src = "slices{{pid}}?wl=" + selected_view_wl + "&ww=" + selected_view_ww;
+          document.getElementsByTagName("head")[0].appendChild(script);
+          return false;
+      }
 
-    {% for view in view_list %}
-    document.getElementById('view_{{view.name}}').onclick = function () {
-        selected_view_item.style.textShadow = "";
-        selected_view_item = document.getElementById('view_{{view.name}}');
-        selected_view_wl = "{{view.wl}}";
-        selected_view_ww = "{{view.ww}}";
-        load_selected_view()
+      {% for view in view_list %}
+          document.getElementById('view_{{view.name}}').onclick = function () {
+              selected_view_item.style.textShadow = "";
+              selected_view_item = document.getElementById('view_{{view.name}}');
+              selected_view_wl = "{{view.wl}}";
+              selected_view_ww = "{{view.ww}}";
+              load_selected_view()
 
-        for (var i = 0; i < additional_z_list.length; i++) {
-            additional_slices(additional_z_list[i], false);
-        }
-    }
-    {% endfor %}
+              for (var i = 0; i < additional_z_list.length; i++) {
+                  additional_slices(additional_z_list[i], false);
+              }
+          }
+      {% endfor %}
 
-    function additional_slices(z, new_z) {
-        if (new_z) {
-            additional_z_list.push(z)
-        }
-        var min_z = (z - 1).toString();
-        var max_z = (z + 2).toString();
+      function additional_slices(z, new_z) {
+          if (new_z) {
+              additional_z_list.push(z)
+          }
+          var min_z = (z - 1).toString();
+          var max_z = (z + 2).toString();
 
-        var script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = "more_slices{{pid}}?wl=" + selected_view_wl + "&ww=" + selected_view_ww + "&z_min=" + min_z + "&z_max=" + max_z;
-        document.getElementsByTagName("head")[0].appendChild(script);
-        return false;
-    }
-    function show_big(z_num) {
-        document.getElementById("main_img").src = document.getElementById("img_"+z_num).src;
-        document.getElementById("main_img_cap").textContent = "z: " + z_num;
+          var script = document.createElement("script");
+          script.type = "text/javascript";
+          script.src = "more_slices{{pid}}?wl=" + selected_view_wl + "&ww=" + selected_view_ww + "&z_min=" + min_z + "&z_max=" + max_z;
+          document.getElementsByTagName("head")[0].appendChild(script);
+          return false;
+      }
 
-    }
+      function show_big(z_num) {
+          document.getElementById("main_img").src = document.getElementById("img_" + z_num).src;
+          document.getElementById("main_img_cap").textContent = "z: " + z_num;
 
-</script>
+      }
+
+  </script>
 
 {% endblock %}
