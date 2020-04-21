@@ -1,7 +1,18 @@
 import base64
+import json
 from io import BytesIO
 
 from PIL import Image
+
+
+def int_key_load(x):
+    tmp = json.loads(x)
+    if type(tmp) is list:
+        return tmp
+    elif type(tmp) is dict:
+        return {int(key): val for key, val in tmp.items()}
+    else:
+        raise
 
 
 def encode(img):
