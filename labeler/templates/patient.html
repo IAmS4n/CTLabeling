@@ -4,6 +4,7 @@
   {% block title %} Labeling Work Area {% endblock %}
 {% endblock %}
 {% block style %}
+
   <style>
     /* The sidebar menu */
     .left {
@@ -174,7 +175,7 @@
 
   <!-- Page content -->
   <div class="row">
-      <div class="col-xs-4">
+      <div class="col-xs-5">
         <form action="patient{{ pid }}" method="post">
           <input type="hidden" id="send_time" name="send_time" value="{{ send_time }}">
           <input type="hidden" id="rnd" name="rnd" value="{{ rnd }}">
@@ -187,8 +188,9 @@
                   {{ slice.z }}
                 </th>
                 <th>
-                  <a onclick="additional_slices({{ slice.z }}, true)" style="cursor: ns-resize;"
+                  <a onclick="additional_slices({{ slice.z }}, true)"
                      onmouseover="show_big({{ slice.z }});"
+                     style="cursor: ns-resize;"
                   >
                     <img id="img_{{ slice.z }}"
                       {% if slice.img %} src="{{ slice.img }}" {% else %} src="" {% endif %}
@@ -251,7 +253,7 @@
           </table>
         </form>
     </div>
-    <div class="col-xs-8">
+    <div class="col-xs-7">
       <div class="sidenav right">
         <figure style="color: firebrick; text-align:center;">
           <figcaption id="main_img_cap">Move mouse over items</figcaption>

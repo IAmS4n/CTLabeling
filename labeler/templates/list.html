@@ -16,7 +16,7 @@
     }
 
     ol ol {
-        margin: 0 0 0 2em; /* Add some left margin for inner lists */
+        margin: 0 0 0 0em; /* Add some left margin for inner lists */
     }
 
     .rounded-list a {
@@ -60,7 +60,7 @@
 </style>
 {% endblock %}
 {% block content %}
-<ol class="rounded-list">
+<ol class="rounded-list" style="width: 75%;">
     {% for p in plist %}
 
     <a href="patient{{p.pid}}">
