@@ -148,7 +148,7 @@
                     {{ slice.z }}
                 </th>
                 <th>
-                    <a onclick="additional_slices({{slice.z}}, true)">
+                    <a onclick="additional_slices({{slice.z}}, true)" style="cursor: ns-resize;">
                         <img id="img_{{slice.z}}"
                              {% if slice.img %} src="{{ slice.img }}" {% else %} src="" {% endif %}
                              class="thumbnail"
