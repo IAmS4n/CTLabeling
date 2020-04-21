@@ -32,6 +32,7 @@ CREATE TABLE log_send
     rnd       TEXT,
     send_time TEXT,
     path      TEXT,
+    type      TEXT,
     details   TEXT
 );
 

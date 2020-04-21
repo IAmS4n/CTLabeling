@@ -65,7 +65,7 @@ def receive(form):
     cursor.close()
 
 
-def prepare_data(pid, wl, ww):
+def prepare_normal_slices(pid, wl, ww):
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
@@ -105,13 +105,54 @@ def prepare_data(pid, wl, ww):
     details = json.dumps(mini_slices)
 
     # save log
-    query = """INSERT INTO log_send (pid, uid, rnd, send_time, path, details) VALUES (?, ?, ?, ?, ?, ?);"""
-    data_tuple = (pid, g.user["id"], rnd, send_time, path, details)
+    query = """INSERT INTO log_send (pid, uid, rnd, send_time, path, type, details) VALUES (?, ?, ?, ?, ?, ?, ?);"""
+    data_tuple = (pid, g.user["id"], rnd, send_time, path, "NormalSlices", details)
     cursor.execute(query, data_tuple)
     sqliteConnection.commit()
-
     cursor.close()
+
+    for z in range(min(final_z) - 1, max(final_z) + 2):
+        if z not in final_z:
+            slices.append({"z": z, "img": ""})
+    slices = sorted(slices, key=lambda i: i['z'])
+
     return slices, send_time, rnd, professor_need, dicom_need
+
+
+def prepare_additional_slice(pid, wl, ww, z_list):
+    sqliteConnection = get_db()
+    cursor = sqliteConnection.cursor()
+
+    # load path
+    query = """SELECT path from samples where pid = ?;"""
+    cursor.execute(query, (pid,))
+    path = cursor.fetchone()[0]
+    full_path = os.path.join(config.data_path, path)
+
+    # new form values
+    rnd = random.getrandbits(32)
+    send_time = time.time()
+
+    mini_slices = []
+    slices = []
+
+    ct = get_ct(full_path, wl=wl, ww=ww, z_list=z_list)
+
+    for z, s in zip(z_list, ct):
+        img, thumbnail = utils.encode(s)
+        slices.append({"z": z, "img": img})
+        mini_slices.append({"z": z, "thumbnail": thumbnail})
+
+    details = json.dumps(mini_slices)
+
+    # save log
+    query = """INSERT INTO log_send (pid, uid, rnd, send_time, path, type, details) VALUES (?, ?, ?, ?, ?, ?, ?);"""
+    data_tuple = (pid, g.user["id"], rnd, send_time, path, "AdditionalSlice", details)
+    cursor.execute(query, data_tuple)
+    sqliteConnection.commit()
+    cursor.close()
+
+    return slices, send_time, rnd
 
 
 def next_pids(pid):
@@ -173,9 +214,9 @@ def get_list():
     return plist
 
 
-@bp.route("/images<pid>", methods=["GET"])
+@bp.route("/slices<pid>", methods=["GET"])
 @login_required
-def update_images(pid):
+def update_slices(pid):
     pid = int(pid)
 
     wl = request.args.get("wl")
@@ -190,10 +231,39 @@ def update_images(pid):
     else:
         ww = int(ww)
 
-    slices, send_time, rnd, _, _ = prepare_data(pid, wl=wl, ww=ww)
+    slices, send_time, rnd, _, _ = prepare_normal_slices(pid, wl=wl, ww=ww)
 
     return render_template(
-        "update_images.js", send_time=send_time, rnd=rnd, slices=slices
+        "update_slices.js", send_time=send_time, rnd=rnd, slices=slices
+    )
+
+
+@bp.route("/more_slices<pid>", methods=["GET"])
+@login_required
+def additonal_slice(pid):
+    pid = int(pid)
+
+    wl = request.args.get("wl")
+    if wl is None:
+        wl = -400
+    else:
+        wl = int(wl)
+
+    ww = request.args.get("ww")
+    if ww is None:
+        ww = 1500
+    else:
+        ww = int(ww)
+
+    z_min = int(request.args.get("z_min"))
+    z_max = int(request.args.get("z_max"))
+    z_list = list(range(z_min, z_max))
+    assert len(z_list) <= 3
+
+    slices, send_time, rnd = prepare_additional_slice(pid, wl=wl, ww=ww, z_list=z_list)
+
+    return render_template(
+        "update_slices.js", send_time=send_time, rnd=rnd, slices=slices
     )
 
 
@@ -210,7 +280,7 @@ def show_patient(pid):
         else:
             return redirect(url_for("panel.show_patient", pid=npid))
 
-    slices, send_time, rnd, professor_need, dicom_need = prepare_data(
+    slices, send_time, rnd, professor_need, dicom_need = prepare_normal_slices(
         pid, wl=-400, ww=1500
     )
 
