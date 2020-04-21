@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %} {% endblock %}</h1>
+  {% block title %} Labeling Work Area {% endblock %}
 {% endblock %}
 {% block style %}
   <style>
@@ -28,7 +28,7 @@
 
     .right {
       height: 100%; /* Full-height: remove this if you want "auto" height */
-      width: 50%; /* Set the width of the sidebar */
+      width: 40%; /* Set the width of the sidebar */
       position: fixed; /* Fixed Sidebar (stay in place on scroll) */
       z-index: 1; /* Stay on top */
       top: 0; /* Stay at the top */
@@ -154,115 +154,120 @@
 
 {% endblock %}
 {% block content %}
-  <h3>Your Role:
-    {% if g.user.role==1 %}
-      Student
-    {% elif g.user.role==2 %}
-      Professor
-    {% else %}
-      Unknown
-    {% endif %}
-    - Patient ID:{{ pid }}</h3>
+  <div class="row">
+    <div class="col-xs-6">
+      <h3>Your Role:
+        {% if g.user.role==1 %}
+          Student
+        {% elif g.user.role==2 %}
+          Professor
+        {% else %}
+          Unknown
+        {% endif %}
+        - Patient ID:{{ pid }}</h3>
 
-  <div class="sidenav left">
-    <h1 style="color: white;text-align: center;font-weight: bold;">Menu</h1>
-    <a href="list">List</a>
-    {% if hpid>=0 %}
-      <a href="patient{{ hpid }}">First Patient</a>
-    {% endif %}
+      <div class="sidenav left">
+        <h1 style="color: white;text-align: center;font-weight: bold;">Menu</h1>
+        <a href="list">List</a>
+        {% if hpid>=0 %}
+          <a href="patient{{ hpid }}">First Patient</a>
+        {% endif %}
 
-    {% if npid>=0 %}
-      <a href="patient{{ npid }}">Next Patient</a>
-    {% endif %}
-    <hr>
-    <h1 style="color: white;text-align: center;font-weight: bold;">View</h1>
-    {% for view in view_list %}
-      <a href="#" id='view_{{ view.name }}'>{{ view.name }}</a>
-    {% endfor %}
-  </div>
-
-  <!-- Page content -->
-  <div class="main">
-    <form action="patient{{ pid }}" method="post">
-      <input type="hidden" id="send_time" name="send_time" value="{{ send_time }}">
-      <input type="hidden" id="rnd" name="rnd" value="{{ rnd }}">
-      <input type="hidden" id="pid" name="pid" value="{{ pid }}">
-      <table>
-        {% for slice in slices %}
-
-          <tr id="tbl_row_{{ slice.z }}" style=" {% if not slice.img %} display: none; {% endif %} ">
-            <th>
-              {{ slice.z }}
-            </th>
-            <th>
-              <a onclick="additional_slices({{ slice.z }})">
-                <img id="img_{{ slice.z }}"
-                  {% if slice.img %} src="{{ slice.img }}" {% else %} src="" {% endif %}
-                     class="thumbnail"
-                     onmouseover='document.getElementById("main_img").src = document.getElementById("img_{{ slice.z }}").src;'
-                >
-              </a>
-
-              <br>
-
-              <div class="container">
-                <ul>
-                  <li>
-                    <input type="radio" value="positive" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_positive"
-                      {% if slice.positive %} checked {% endif %} class="one"/>
-                    <label for="z_{{ slice.z }}_positive">Positive</label>
-                    <div class="check"></div>
-                  </li>
-                  <li>
-                    <input type="radio" value="negative" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_negative"
-                      {% if slice.negative %} checked {% endif %} class="two"/>
-                    <label for="z_{{ slice.z }}_negative">Negative</label>
-                    <div class="check"></div>
-                  </li>
-                </ul>
-              </div>
-
-            </th>
-          </tr>
+        {% if npid>=0 %}
+          <a href="patient{{ npid }}">Next Patient</a>
+        {% endif %}
+        <hr>
+        <h1 style="color: white;text-align: center;font-weight: bold;">View</h1>
+        {% for view in view_list %}
+          <a href="#" id='view_{{ view.name }}'>{{ view.name }}</a>
         {% endfor %}
+      </div>
 
-        <tr>
-          <th></th>
-          <th>
-            {% if g.user.role==1 %}
-              <input type="checkbox" id="professor_need" name="professor_need" value="1"
-                {% if professor_need %}
-                     checked
+      <!-- Page content -->
+      <div class="main">
+        <form action="patient{{ pid }}" method="post">
+          <input type="hidden" id="send_time" name="send_time" value="{{ send_time }}">
+          <input type="hidden" id="rnd" name="rnd" value="{{ rnd }}">
+          <input type="hidden" id="pid" name="pid" value="{{ pid }}">
+          <table>
+            {% for slice in slices %}
+
+              <tr id="tbl_row_{{ slice.z }}" style=" {% if not slice.img %} display: none; {% endif %} ">
+                <th>
+                  {{ slice.z }}
+                </th>
+                <th>
+                  <a onclick="additional_slices({{ slice.z }})">
+                    <img id="img_{{ slice.z }}"
+                      {% if slice.img %} src="{{ slice.img }}" {% else %} src="" {% endif %}
+                         class="thumbnail"
+                         onmouseover='document.getElementById("main_img").src = document.getElementById("img_{{ slice.z }}").src;'
+                    >
+                  </a>
+
+                  <br>
+
+                  <div class="container">
+                    <ul>
+                      <li>
+                        <input type="radio" value="positive" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_positive"
+                          {% if slice.positive %} checked {% endif %} class="one"/>
+                        <label for="z_{{ slice.z }}_positive">Positive</label>
+                        <div class="check"></div>
+                      </li>
+                      <li>
+                        <input type="radio" value="negative" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_negative"
+                          {% if slice.negative %} checked {% endif %} class="two"/>
+                        <label for="z_{{ slice.z }}_negative">Negative</label>
+                        <div class="check"></div>
+                      </li>
+                    </ul>
+                  </div>
+
+                </th>
+              </tr>
+            {% endfor %}
+
+            <tr>
+              <th></th>
+              <th>
+                {% if g.user.role==1 %}
+                  <input type="checkbox" id="professor_need" name="professor_need" value="1"
+                    {% if professor_need %}
+                         checked
+                    {% endif %}
+                  >
+                  <label for="professor_need">Needs Professor</label>
+                  <br>
                 {% endif %}
-              >
-              <label for="professor_need">Needs Professor</label>
-              <br>
-            {% endif %}
 
-            <input type="checkbox" id="dicom_need" name="dicom_need" value="1"
-              {% if dicom_need %}
-                   checked
-              {% endif %}
-            >
-            <label for="dicom_need">Needs DICOM</label>
+                <input type="checkbox" id="dicom_need" name="dicom_need" value="1"
+                  {% if dicom_need %}
+                       checked
+                  {% endif %}
+                >
+                <label for="dicom_need">Needs DICOM</label>
 
-            <br>
+                <br>
 
-            <button type="submit"
-                    style="display: block;margin: auto;background-color: crimson;color: white;">
-              Save & Next
-            </button>
-          </th>
-        </tr>
-      </table>
-    </form>
-  </div>
-
-  <div class="sidenav right">
-    <figure style="color: firebrick; text-align:center;">
-      <img id="main_img" class="main_img">
-      <figcaption id="main_img_cap">Move mouse over items</figcaption>
-    </figure>
+                <button type="submit"
+                        style="display: block;margin: auto;background-color: crimson;color: white;">
+                  Save & Next
+                </button>
+              </th>
+            </tr>
+          </table>
+        </form>
+      </div>
+    </div>
+    <div class="col-xs-6" style="position: relative">
+      <div class="sidenav right">
+        <figure style="color: firebrick; text-align:center;">
+          <img id="main_img" class="main_img">
+          <figcaption id="main_img_cap">Move mouse over items</figcaption>
+        </figure>
+      </div>
+    </div>
   </div>
   <script type="text/javascript">
       var additional_z_list = [];

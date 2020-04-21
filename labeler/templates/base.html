@@ -2,6 +2,7 @@
 <title>{% block title %}{% endblock %} - CT Label Panel</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/kognise/water.css@latest/dist/light.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flexboxgrid/6.3.1/flexboxgrid.min.css" type="text/css" >
 <style>
   /* Box sizing rules */
   *,
@@ -88,11 +89,13 @@
   </ul>
 </nav>
 <section class="content">
-  <header>
+  <h2>
     {% block header %}{% endblock %}
-  </header>
+  </h2>
+
   {% for message in get_flashed_messages() %}
     <div class="flash">{{ message }}</div>
   {% endfor %}
+
   {% block content %}{% endblock %}
 </section>
