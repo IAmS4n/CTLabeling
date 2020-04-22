@@ -156,7 +156,7 @@
     <hr>
     <h1 style="color: white;text-align: center;font-weight: bold;">View</h1>
 
-    {% for view in view_list %}
+    {% for view in config.VIEW_LIST %}
       <a id='view_{{ view.name }}' style="cursor: grabbing;">{{ view.name }}</a>
     {% endfor %}
   </div>
@@ -248,13 +248,11 @@
 
   <script type="text/javascript">
       var additional_z_list = [];
-      {% for view in view_list %}
-          {% if view.name == "Lungs" %}
-              var selected_view_item = document.getElementById('view_{{view.name}}');
-              var selected_view_wl = "{{view.wl}}";
-              var selected_view_ww = "{{view.ww}}";
-          {% endif %}
-      {% endfor %}
+
+      var selected_view_item = document.getElementById('view_{{config.VIEW_LIST[config.DEFAULT_VIEW].name}}');
+      var selected_view_wl = "{{config.VIEW_LIST[config.DEFAULT_VIEW].wl}}";
+      var selected_view_ww = "{{config.VIEW_LIST[config.DEFAULT_VIEW].ww}}";
+
       selected_view_item.style.textShadow = "0px 0px 5px green";
 
       function change_selected_view() {
@@ -271,7 +269,7 @@
           return false;
       }
 
-      {% for view in view_list %}
+      {% for view in config.VIEW_LIST %}
           document.getElementById('view_{{view.name}}').onclick = function () {
               selected_view_item.style.textShadow = "";
               selected_view_item = document.getElementById('view_{{view.name}}');

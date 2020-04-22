@@ -9,6 +9,7 @@ from flask import (
     session,
     url_for,
     g,
+current_app
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -31,6 +32,9 @@ def load_logged_in_user():
 
 @bp.route("/register", methods=("GET", "POST"))
 def register():
+    if not current_app.config["REGISTER_ACTIVE"]:
+        return redirect(url_for("auth.login"))
+
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
