@@ -10,3 +10,5 @@ class Config:
         {"name": "Lungs", "wl": -400, "ww": 1500},
     ]
     DEFAULT_VIEW = 5
+    SECRET_KEY = open(".secret_key").read()
+    MAX_ADDITIONAL_PER_DAY = 24*6*20

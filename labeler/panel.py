@@ -6,6 +6,7 @@ import time
 from flask import Blueprint
 from flask import g
 from flask import render_template, request, redirect, url_for, current_app
+from werkzeug.exceptions import BadRequest
 
 from labeler import utils
 from labeler.auth import login_required
@@ -14,6 +15,27 @@ from labeler.db import get_db
 from labeler.utils import int_key_load
 
 bp = Blueprint("panel", __name__, url_prefix="/panel")
+
+
+def check_additional_limit():
+    sqliteConnection = get_db()
+    cursor = sqliteConnection.cursor()
+
+    query = """SELECT COUNT(pid) from log_send WHERE uid = ? AND type = 'AdditionalSlice' AND CAST(send_time AS INTEGER)>?;"""
+
+    cursor.execute(query, (g.user["id"], int(time.time()) - 24 * 60 * 60))
+    res = cursor.fetchone()
+
+    check_pass = False
+    if (res is not None) and (res[0] is not None):
+        check_pass = res[0] < current_app.config["MAX_ADDITIONAL_PER_DAY"]
+
+    cursor.close()
+
+    if not check_pass:
+        raise BadRequest()
+
+    return check_pass
 
 
 def receive(form):
@@ -120,6 +142,8 @@ def prepare_normal_slices(pid, wl, ww):
 
 
 def prepare_additional_slice(pid, wl, ww, z_list):
+    assert check_additional_limit()
+
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
@@ -127,7 +151,7 @@ def prepare_additional_slice(pid, wl, ww, z_list):
     query = """SELECT path from samples where pid = ?;"""
     cursor.execute(query, (pid,))
     path = cursor.fetchone()[0]
-    full_path = os.path.join(bp.confi.data_path, path)
+    full_path = os.path.join(current_app.config["DATA_PATH"], path)
 
     # new form values
     rnd = random.getrandbits(32)
