@@ -31,6 +31,10 @@ def get_pixels_hu(slices):
 
 def get_ct(path, wl, ww, z_list=None):
     images = [image for image in glob(path + "/*") if "tmb" not in image.split("/")[-1]]
+
+    #############################################################
+    # NOTE : The sort needs be adapted with slices name format  #
+    #############################################################
     images = sorted(images, key=lambda x: x.split("/")[-1])
 
     if z_list is None:
