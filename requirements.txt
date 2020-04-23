@@ -1,6 +1,6 @@
-numpy~=1.18.2
+numpy
 pydicom~=1.4.2
-Flask~=1.1.2
-pillow~=7.1.1
-click~=7.1.1
-werkzeug~=0.15.6
+Flask
+pillow
+click
+werkzeug

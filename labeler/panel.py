@@ -1,6 +1,7 @@
 import json
 import os
 import random
+import sqlite3
 import time
 
 from flask import Blueprint
@@ -188,19 +189,28 @@ def next_pids(pid):
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
+    if sqlite3.sqlite_version >= '3.25':
+        if role == 1:
+            query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where (professor_check = 0  AND student_check = 0) OR pid = ?) where pid=?;"""
+        else:
+            query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where professor_need = 1 OR pid = ?) where pid=?;"""
+
+        cursor.execute(query_npid, (pid, pid))
+        res = cursor.fetchone()
+        if (res is None) or (res[0] is None):
+            npid = -1
+        else:
+            npid = res[0]
+    else:
+        query_npid = """SELECT MAX(pid) from samples"""
+        cursor.execute(query_npid)
+        res = cursor.fetchone()
+        npid = min(res[0], pid + 1)
+
     if role == 1:
-        query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where (professor_check = 0  AND student_check = 0) OR pid = ?) where pid=?;"""
         query_hpid = """SELECT pid from samples WHERE professor_check = 0  AND student_check = 0 ORDER BY priority DESC, pid ASC LIMIT 1;"""
     else:
-        query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where professor_need = 1 OR pid = ?) where pid=?;"""
         query_hpid = """SELECT pid from samples WHERE professor_need = 1 ORDER BY priority DESC, pid ASC LIMIT 1;"""
-
-    cursor.execute(query_npid, (pid, pid))
-    res = cursor.fetchone()
-    if (res is None) or (res[0] is None):
-        npid = -1
-    else:
-        npid = res[0]
 
     cursor.execute(query_hpid)
     res = cursor.fetchone()
