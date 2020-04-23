@@ -11,4 +11,4 @@ class Config:
     ]
     DEFAULT_VIEW = 5
     SECRET_KEY = open(".secret_key").read()
-    MAX_ADDITIONAL_PER_DAY = 24*6*20
+    MAX_ADDITIONAL_PER_DAY = 24*10*10

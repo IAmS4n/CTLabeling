@@ -1,8 +1,11 @@
 import base64
+import hashlib
+import hmac
 import json
 from io import BytesIO
 
 from PIL import Image
+from flask import session
 
 
 def int_key_load(x):
@@ -32,3 +35,12 @@ def encode(img):
     )
 
     return org, thumbnail
+
+
+def zhmac(pid, z):
+    key = session.get("hmac_key")
+    assert key is not None
+
+    digest_maker = hmac.new(key, b"%d_%d" % (pid, z), hashlib.md5)
+
+    return digest_maker.hexdigest()

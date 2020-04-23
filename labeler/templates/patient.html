@@ -189,11 +189,11 @@
                 </th>
                 <th>
                   <div class="radio-toolbar">
-                    <input type="radio" value="positive" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_positive"
+                    <input type="radio" value="positive" name="z_{{ slice.z }}_{{slice.hmac}}" id="z_{{ slice.z }}_positive"
                       {% if slice.positive %} checked {% endif %}/>
                     <label for="z_{{ slice.z }}_positive" style="color: darkred;">+</label>
 
-                    <input type="radio" value="negative" name="z_{{ slice.z }}_status" id="z_{{ slice.z }}_negative"
+                    <input type="radio" value="negative" name="z_{{ slice.z }}_{{slice.hmac}}" id="z_{{ slice.z }}_negative"
                       {% if slice.negative %} checked {% endif %}/>
                     <label for="z_{{ slice.z }}_negative" style="color: darkgreen;">-</label>
                   </div>

@@ -62,7 +62,10 @@ def receive(form):
         if name.startswith("z") and "_" in name:
             tmp = name.split("_")
             assert (len(tmp) == 3) and (form[name] in ["positive", "negative"])
-            zs_result[int(tmp[1])] = (form[name] == "positive")
+            z = int(tmp[1])
+            hmac = tmp[2]
+            assert utils.zhmac(pid, z) == hmac
+            zs_result[z] = (form[name] == "positive")
 
     zs_result = json.dumps(zs_result)  # keys will cast to str
 
@@ -114,7 +117,7 @@ def prepare_normal_slices(pid, wl, ww):
 
     for z, s in zip(final_z, ct):
         img, thumbnail = utils.encode(s)
-        row = {"z": z, "img": img}
+        row = {"z": z, "hmac": utils.zhmac(pid, z), "img": img}
         if z in zs_result:
             if zs_result[z]:
                 row["positive"] = True
@@ -135,7 +138,7 @@ def prepare_normal_slices(pid, wl, ww):
 
     for z in range(min(final_z) - 1, max(final_z) + 2):
         if z not in final_z:
-            slices.append({"z": z, "img": ""})
+            slices.append({"z": z, "hmac": "", "img": ""})
     slices = sorted(slices, key=lambda i: i['z'])
 
     return slices, send_time, rnd, professor_need, dicom_need
@@ -164,7 +167,7 @@ def prepare_additional_slice(pid, wl, ww, z_list):
 
     for z, s in zip(z_list, ct):
         img, thumbnail = utils.encode(s)
-        slices.append({"z": z, "img": img})
+        slices.append({"z": z, "hmac": utils.zhmac(pid, z), "img": img})
         mini_slices.append({"z": z, "thumbnail": thumbnail})
 
     details = json.dumps(mini_slices)

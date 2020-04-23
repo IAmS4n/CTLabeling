@@ -1,4 +1,5 @@
 import functools
+import os
 
 from flask import (
     Blueprint,
@@ -9,7 +10,7 @@ from flask import (
     session,
     url_for,
     g,
-current_app
+    current_app
 )
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -26,7 +27,7 @@ def load_logged_in_user():
         g.user = None
     else:
         g.user = (
-            get_db().execute("SELECT * FROM user WHERE id = ?", (user_id,)).fetchone()
+            get_db().execute("SELECT id, username, role FROM user WHERE id = ?", (user_id,)).fetchone()
         )
 
 
@@ -98,6 +99,7 @@ def login():
         if error is None:
             session.clear()
             session["user_id"] = user["id"]
+            session["hmac_key"] = os.urandom(16)
             return redirect(url_for("panel.show_list"))
 
         flash(error)
