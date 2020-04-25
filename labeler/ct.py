@@ -1,5 +1,3 @@
-from glob import glob
-
 import numpy as np
 import pydicom
 
@@ -29,21 +27,15 @@ def get_pixels_hu(slices):
     return np.array(image, dtype=np.int16)
 
 
-def get_ct(path, wl, ww, z_list=None):
-    images = [image for image in glob(path + "/*") if "tmb" not in image.split("/")[-1]]
-
-    #############################################################
-    # NOTE : The sort needs be adapted with slices name format  #
-    #############################################################
-    images = sorted(images, key=lambda x: x.split("/")[-1])
-
-    if z_list is None:
-        selected_images = images
-    else:
-        selected_images = [images[z] for z in z_list]
-
-    slices = [pydicom.read_file(image_dir) for image_dir in selected_images]
+def get_ct_hu(zs_path, z_list):
+    selected_dicoms = [zs_path[z] for z in z_list]
+    slices = [pydicom.read_file(dicom_file) for dicom_file in selected_dicoms]
     hu_ct = get_pixels_hu(slices)
+    return hu_ct
+
+
+def get_ct(zs_path, wl, ww, z_list):
+    hu_ct = get_ct_hu(zs_path=zs_path, z_list=z_list)
 
     min_hu = float(wl - ww / 2.0)
     max_hu = float(wl + ww / 2.0)

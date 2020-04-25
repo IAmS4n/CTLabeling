@@ -15,8 +15,8 @@ CREATE TABLE user
 CREATE TABLE samples
 (
     pid             INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT UNIQUE,
-    path            TEXT    NOT NULL,
-    zs              TEXT    NOT NULL,
+    zs_path         TEXT    NOT NULL,
+    zs_init         TEXT    NOT NULL,
     priority        INTEGER NOT NULL,
     student_check   INTEGER NOT NULL DEFAULT 0,
     professor_check INTEGER NOT NULL DEFAULT 0,
@@ -31,7 +31,6 @@ CREATE TABLE log_send
     uid       INTEGER,
     rnd       TEXT,
     send_time TEXT,
-    path      TEXT,
     type      TEXT,
     details   TEXT
 );

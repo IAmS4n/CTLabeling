@@ -13,23 +13,32 @@ from labeler import utils
 from labeler.auth import login_required
 from labeler.ct import get_ct
 from labeler.db import get_db
-from labeler.utils import int_key_load
+from labeler.utils import int_key_json_load
 
 bp = Blueprint("panel", __name__, url_prefix="/panel")
 
 
-def check_additional_limit():
+def check_limit():
+    check_pass = True
+
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
     query = """SELECT COUNT(pid) from log_send WHERE uid = ? AND type = 'AdditionalSlice' AND CAST(send_time AS INTEGER)>?;"""
-
     cursor.execute(query, (g.user["id"], int(time.time()) - 24 * 60 * 60))
     res = cursor.fetchone()
-
-    check_pass = False
     if (res is not None) and (res[0] is not None):
-        check_pass = res[0] < current_app.config["MAX_ADDITIONAL_PER_DAY"]
+        check_pass &= res[0] < current_app.config["MAX_ADDITIONAL_SLICE_PER_DAY"]
+    else:
+        check_pass = False
+
+    query = """SELECT COUNT(pid) from log_send WHERE uid = ? AND type = 'NormalSlices' AND CAST(send_time AS INTEGER)>?;"""
+    cursor.execute(query, (g.user["id"], int(time.time()) - 24 * 60 * 60))
+    res = cursor.fetchone()
+    if (res is not None) and (res[0] is not None):
+        check_pass &= res[0] < current_app.config["MAX_PATIENT_PER_DAY"]
+    else:
+        check_pass = False
 
     cursor.close()
 
@@ -91,17 +100,20 @@ def receive(form):
 
 
 def prepare_normal_slices(pid, wl, ww):
+    assert check_limit()
+
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
     # load old values
-    query = """SELECT path, zs, professor_need, dicom_need, zs_result from samples where pid = ?;"""
+    query = """SELECT zs_path, zs_init, professor_need, dicom_need, zs_result from samples where pid = ?;"""
     cursor.execute(query, (pid,))
-    path, zs, professor_need, dicom_need, zs_result = cursor.fetchone()
-    zs = int_key_load(zs)
+    zs_path, zs_init, professor_need, dicom_need, zs_result = cursor.fetchone()
+    zs_path = int_key_json_load(zs_path)
+    zs_init = int_key_json_load(zs_init)
 
     try:
-        zs_result = int_key_load(zs_result)
+        zs_result = int_key_json_load(zs_result)
     except:
         zs_result = {}
 
@@ -112,9 +124,8 @@ def prepare_normal_slices(pid, wl, ww):
     mini_slices = []
     slices = []
 
-    full_path = os.path.join(current_app.config["DATA_PATH"], path)
-    final_z = list(set(zs_result.keys()) | set(zs))
-    ct = get_ct(full_path, wl=wl, ww=ww, z_list=final_z)
+    final_z = sorted(list(set(zs_result.keys()) | set(zs_init)))
+    ct = get_ct(zs_path, wl=wl, ww=ww, z_list=final_z)
 
     for z, s in zip(final_z, ct):
         img, thumbnail = utils.encode(s)
@@ -131,8 +142,8 @@ def prepare_normal_slices(pid, wl, ww):
     details = json.dumps(mini_slices)
 
     # save log
-    query = """INSERT INTO log_send (pid, uid, rnd, send_time, path, type, details) VALUES (?, ?, ?, ?, ?, ?, ?);"""
-    data_tuple = (pid, g.user["id"], rnd, send_time, path, "NormalSlices", details)
+    query = """INSERT INTO log_send (pid, uid, rnd, send_time, type, details) VALUES (?, ?, ?, ?, ?, ?);"""
+    data_tuple = (pid, g.user["id"], rnd, send_time, "NormalSlices", details)
     cursor.execute(query, data_tuple)
     sqliteConnection.commit()
     cursor.close()
@@ -146,16 +157,16 @@ def prepare_normal_slices(pid, wl, ww):
 
 
 def prepare_additional_slice(pid, wl, ww, z_list):
-    assert check_additional_limit()
+    assert check_limit()
 
     sqliteConnection = get_db()
     cursor = sqliteConnection.cursor()
 
     # load path
-    query = """SELECT path from samples where pid = ?;"""
+    query = """SELECT zs_path from samples where pid = ?;"""
     cursor.execute(query, (pid,))
-    path = cursor.fetchone()[0]
-    full_path = os.path.join(current_app.config["DATA_PATH"], path)
+    zs_path = cursor.fetchone()[0]
+    zs_path = int_key_json_load(zs_path)
 
     # new form values
     rnd = random.getrandbits(32)
@@ -164,8 +175,7 @@ def prepare_additional_slice(pid, wl, ww, z_list):
     mini_slices = []
     slices = []
 
-    ct = get_ct(full_path, wl=wl, ww=ww, z_list=z_list)
-
+    ct = get_ct(zs_path, wl=wl, ww=ww, z_list=z_list)
     for z, s in zip(z_list, ct):
         img, thumbnail = utils.encode(s)
         slices.append({"z": z, "hmac": utils.zhmac(pid, z), "img": img})
@@ -174,8 +184,8 @@ def prepare_additional_slice(pid, wl, ww, z_list):
     details = json.dumps(mini_slices)
 
     # save log
-    query = """INSERT INTO log_send (pid, uid, rnd, send_time, path, type, details) VALUES (?, ?, ?, ?, ?, ?, ?);"""
-    data_tuple = (pid, g.user["id"], rnd, send_time, path, "AdditionalSlice", details)
+    query = """INSERT INTO log_send (pid, uid, rnd, send_time, type, details) VALUES (?, ?, ?, ?, ?, ?);"""
+    data_tuple = (pid, g.user["id"], rnd, send_time, "AdditionalSlice", details)
     cursor.execute(query, data_tuple)
     sqliteConnection.commit()
     cursor.close()

@@ -8,7 +8,7 @@ from PIL import Image
 from flask import session
 
 
-def int_key_load(x):
+def int_key_json_load(x):
     tmp = json.loads(x)
     if type(tmp) is list:
         return tmp

@@ -1,6 +1,4 @@
 class Config:
-    DATA_PATH = "./sample_dicom/"
-
     VIEW_LIST = [
         {"name": "Abdomen", "wl": 60, "ww": 400},
         {"name": "Angio", "wl": 300, "ww": 600},
@@ -13,4 +11,5 @@ class Config:
 
     REGISTER_ACTIVE = True
     SECRET_KEY = open(".secret_key", "rb").read()
-    MAX_ADDITIONAL_PER_DAY = 24 * 10 * 10
+    MAX_ADDITIONAL_SLICE_PER_DAY = 300
+    MAX_PATIENT_PER_DAY = 600
