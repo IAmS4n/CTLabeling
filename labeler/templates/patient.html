@@ -164,7 +164,7 @@
   <!-- Page content -->
   <div class="row">
       <div class="col-xs-4">
-        <form action="patient{{ pid }}" method="post">
+        <form action="patient{{ pid }}" method="post" onsubmit="return conf_submit();">
           <input type="hidden" id="send_time" name="send_time" value="{{ send_time }}">
           <input type="hidden" id="rnd" name="rnd" value="{{ rnd }}">
           <input type="hidden" id="pid" name="pid" value="{{ pid }}">
@@ -224,8 +224,7 @@
 
                 <br>
 
-                <button type="submit"
-                        style="display: block;margin: auto;background-color: crimson;color: white;">
+                <button type="submit" style="display: block;margin: auto;background-color: crimson;color: white;">
                   Save & Next
                 </button>
               </th>
@@ -239,72 +238,113 @@
         <figure style="color: firebrick; text-align:center;">
           <figcaption id="main_img_cap" style="font-size: 20px;font-weight: bold;">Move mouse over items</figcaption>
           <div class="img-magnifier-container" onclick="toggle_magnify()">
-          <img id="main_img" style="width: 95%;" onload="magnify(3);">
+          <img id="main_img" style="width: 95%; cursor: zoom-in" onload="magnify(3);">
           </div>
         </figure>
       </div>
     </div>
   </div>
 
-  <script type="text/javascript">
-      var additional_z_list = [];
+<script type="text/javascript">
+    var additional_z_list = [];
 
-      var selected_view_item = document.getElementById('view_{{config.VIEW_LIST[config.DEFAULT_VIEW].name}}');
-      var selected_view_wl = "{{config.VIEW_LIST[config.DEFAULT_VIEW].wl}}";
-      var selected_view_ww = "{{config.VIEW_LIST[config.DEFAULT_VIEW].ww}}";
+    var selected_view_item = document.getElementById('view_{{config.VIEW_LIST[config.DEFAULT_VIEW].name}}');
+    var selected_view_wl = "{{config.VIEW_LIST[config.DEFAULT_VIEW].wl}}";
+    var selected_view_ww = "{{config.VIEW_LIST[config.DEFAULT_VIEW].ww}}";
 
-      selected_view_item.style.textShadow = "0px 0px 5px green";
+    selected_view_item.style.textShadow = "0px 0px 5px green";
 
-      function change_selected_view() {
-          selected_view_item.style.textShadow = "0px 0px 5px green";
+    function change_selected_view() {
+        selected_view_item.style.textShadow = "0px 0px 5px green";
+    }
+
+    function load_selected_view() {
+        selected_view_item.style.textShadow = "0px 0px 5px red";
+
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "slices{{pid}}?wl=" + selected_view_wl + "&ww=" + selected_view_ww;
+        document.getElementsByTagName("head")[0].appendChild(script);
+        return false;
+    }
+
+    {% for view in config.VIEW_LIST %}
+        document.getElementById('view_{{view.name}}').onclick = function () {
+            selected_view_item.style.textShadow = "";
+            selected_view_item = document.getElementById('view_{{view.name}}');
+            selected_view_wl = "{{view.wl}}";
+            selected_view_ww = "{{view.ww}}";
+            load_selected_view()
+
+            for (var i = 0; i < additional_z_list.length; i++) {
+                additional_slices(additional_z_list[i], false);
+            }
+        }
+    {% endfor %}
+
+    function additional_slices(z, new_z) {
+        if (new_z) {
+            additional_z_list.push(z)
+        }
+        var min_z = (z - 1).toString();
+        var max_z = (z + 2).toString();
+
+        var script = document.createElement("script");
+        script.type = "text/javascript";
+        script.src = "more_slices{{pid}}?wl=" + selected_view_wl + "&ww=" + selected_view_ww + "&z_min=" + min_z + "&z_max=" + max_z;
+        document.getElementsByTagName("head")[0].appendChild(script);
+        return false;
+    }
+
+    function show_big(z_num) {
+        document.getElementById("main_img").src = document.getElementById("img_" + z_num).src;
+        document.getElementById("main_img_cap").textContent = "z: " + z_num;
+
+    }
+
+</script>
+<script>
+  function conf_submit() {
+	var slice_status = {};
+	var all_radios = document.querySelectorAll('input[type="radio"]');
+	for (var i = 0; i < all_radios.length; i++) {
+      z = all_radios[i].name.split("_")[1];
+	  hmac = all_radios[i].name.split("_")[2];
+      if (hmac!==""){
+        if (z in slice_status){
+          slice_status[z] |= all_radios[i].checked;
+        }
+        else{
+          slice_status[z] = all_radios[i].checked;
+        }
+      }
+    }
+
+    var all_checked = true;
+	var first_z = null;
+	for(var z in slice_status) {
+	  if (!slice_status[z]){
+	    all_checked = false;
+	    first_z = z;
+	    break;
       }
 
-      function load_selected_view() {
-          selected_view_item.style.textShadow = "0px 0px 5px red";
+    }
 
-          var script = document.createElement("script");
-          script.type = "text/javascript";
-          script.src = "slices{{pid}}?wl=" + selected_view_wl + "&ww=" + selected_view_ww;
-          document.getElementsByTagName("head")[0].appendChild(script);
-          return false;
+    if (!all_checked){
+      if (confirm("Are you sure? There is some unchecked slices.")){
+        return true;
       }
-
-      {% for view in config.VIEW_LIST %}
-          document.getElementById('view_{{view.name}}').onclick = function () {
-              selected_view_item.style.textShadow = "";
-              selected_view_item = document.getElementById('view_{{view.name}}');
-              selected_view_wl = "{{view.wl}}";
-              selected_view_ww = "{{view.ww}}";
-              load_selected_view()
-
-              for (var i = 0; i < additional_z_list.length; i++) {
-                  additional_slices(additional_z_list[i], false);
-              }
-          }
-      {% endfor %}
-
-      function additional_slices(z, new_z) {
-          if (new_z) {
-              additional_z_list.push(z)
-          }
-          var min_z = (z - 1).toString();
-          var max_z = (z + 2).toString();
-
-          var script = document.createElement("script");
-          script.type = "text/javascript";
-          script.src = "more_slices{{pid}}?wl=" + selected_view_wl + "&ww=" + selected_view_ww + "&z_min=" + min_z + "&z_max=" + max_z;
-          document.getElementsByTagName("head")[0].appendChild(script);
-          return false;
+      else
+      {
+        document.getElementById("tbl_row_" + first_z).scrollIntoView();
+        return false;
       }
-
-      function show_big(z_num) {
-          document.getElementById("main_img").src = document.getElementById("img_" + z_num).src;
-          document.getElementById("main_img_cap").textContent = "z: " + z_num;
-
-      }
-
-  </script>
-
+    }
+    else
+      return true;
+  }
+</script>
 <script>
   /*create magnifier glass:*/
   var glass = document.createElement("DIV");
@@ -343,17 +383,20 @@
       x = pos.x;
       y = pos.y;
       /*prevent the magnifier glass from being positioned outside the image:*/
-      if (x > img.width - (w / zoom)) {
-        x = img.width - (w / zoom);
+      vh = h * 2
+      vw = w * 2
+
+      if (x > img.width - (vw / zoom)) {
+        x = img.width - (vw / zoom);
       }
-      if (x < w / zoom) {
-        x = w / zoom;
+      if (x < vw / zoom) {
+        x = vw / zoom;
       }
-      if (y > img.height - (h / zoom)) {
-        y = img.height - (h / zoom);
+      if (y > img.height - (vh / zoom)) {
+        y = img.height - (vh / zoom);
       }
-      if (y < h / zoom) {
-        y = h / zoom;
+      if (y < vh / zoom) {
+        y = vh / zoom;
       }
       /*set the position of the magnifier glass:*/
       glass.style.left = (x - w) + "px";

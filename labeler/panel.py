@@ -1,5 +1,4 @@
 import json
-import os
 import random
 import sqlite3
 import time
@@ -139,7 +138,7 @@ def prepare_normal_slices(pid, wl, ww):
 
         mini_slices.append({"z": z, "thumbnail": thumbnail, "status": zs_result.get(z, None)})
 
-    details = json.dumps(mini_slices)
+    details = json.dumps({"slices": mini_slices, "wl": wl, "ww": ww, "IP": request.remote_addr})
 
     # save log
     query = """INSERT INTO log_send (pid, uid, rnd, send_time, type, details) VALUES (?, ?, ?, ?, ?, ?);"""
@@ -181,7 +180,7 @@ def prepare_additional_slice(pid, wl, ww, z_list):
         slices.append({"z": z, "hmac": utils.zhmac(pid, z), "img": img})
         mini_slices.append({"z": z, "thumbnail": thumbnail})
 
-    details = json.dumps(mini_slices)
+    details = json.dumps({"slices": mini_slices, "wl": wl, "ww": ww, "IP": request.remote_addr})
 
     # save log
     query = """INSERT INTO log_send (pid, uid, rnd, send_time, type, details) VALUES (?, ?, ?, ?, ?, ?);"""
@@ -201,36 +200,42 @@ def next_pids(pid):
 
     if sqlite3.sqlite_version >= '3.25':
         if role == 1:
-            query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where (professor_check = 0  AND student_check = 0) OR pid = ?) where pid=?;"""
+            query_next_pid = """select next from (SELECT pid, professor_check, student_check, lead(pid) 
+            OVER (ORDER BY priority DESC, pid ASC) as next 
+            from samples where (professor_check = 0  AND student_check = 0) OR pid = ?) where pid=?;"""
         else:
-            query_npid = """select next from (SELECT pid, professor_check, student_check, lead(pid) OVER (ORDER BY priority DESC, pid ASC) as next from samples where professor_need = 1 OR pid = ?) where pid=?;"""
+            query_next_pid = """select next from (SELECT pid, professor_check, student_check, lead(pid) 
+            OVER (ORDER BY priority DESC, pid ASC) as next 
+            from samples where professor_need = 1 OR pid = ?) where pid=?;"""
 
-        cursor.execute(query_npid, (pid, pid))
+        cursor.execute(query_next_pid, (pid, pid))
         res = cursor.fetchone()
         if (res is None) or (res[0] is None):
-            npid = -1
+            next_pid = -1
         else:
-            npid = res[0]
+            next_pid = res[0]
     else:
-        query_npid = """SELECT MAX(pid) from samples"""
-        cursor.execute(query_npid)
+        query_next_pid = """SELECT MAX(pid) from samples"""
+        cursor.execute(query_next_pid)
         res = cursor.fetchone()
-        npid = min(res[0], pid + 1)
+        next_pid = pid + 1
+        if next_pid > res[0]:
+            next_pid = -1
 
     if role == 1:
-        query_hpid = """SELECT pid from samples WHERE professor_check = 0  AND student_check = 0 ORDER BY priority DESC, pid ASC LIMIT 1;"""
+        query_first_pid = """SELECT pid from samples WHERE professor_check = 0  AND student_check = 0 ORDER BY priority DESC, pid ASC LIMIT 1;"""
     else:
-        query_hpid = """SELECT pid from samples WHERE professor_need = 1 ORDER BY priority DESC, pid ASC LIMIT 1;"""
+        query_first_pid = """SELECT pid from samples WHERE professor_need = 1 ORDER BY priority DESC, pid ASC LIMIT 1;"""
 
-    cursor.execute(query_hpid)
+    cursor.execute(query_first_pid)
     res = cursor.fetchone()
     if (res is None) or (res[0] is None):
-        hpid = -1
+        first_pid = -1
     else:
-        hpid = res[0]
+        first_pid = res[0]
 
     cursor.close()
-    return npid, hpid
+    return next_pid, first_pid
 
 
 def get_list():

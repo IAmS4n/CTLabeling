@@ -28,5 +28,6 @@ def make_zs_path(patient_dir):
 
     return zs_path
 
+if __name__=="__main__":
 
-add(make_zs_path("./sample_dicom/"), list(range(0, 24, 3)), 10)
+    add(make_zs_path("./sample_dicom/"), list(range(0, 24, 3)), 10)

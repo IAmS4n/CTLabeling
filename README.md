@@ -3,3 +3,6 @@
 A simple privacy-focused web panel for labeling CT Scan's slices. 
 
 ![alt text](panel_demo.png)
+
+
+![alt text](list_demo.png)
