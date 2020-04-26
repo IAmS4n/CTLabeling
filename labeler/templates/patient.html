@@ -383,8 +383,8 @@
       x = pos.x;
       y = pos.y;
       /*prevent the magnifier glass from being positioned outside the image:*/
-      vh = h * 2
-      vw = w * 2
+      var vh = h * 2;
+      var vw = w * 2;
 
       if (x > img.width - (vw / zoom)) {
         x = img.width - (vw / zoom);
