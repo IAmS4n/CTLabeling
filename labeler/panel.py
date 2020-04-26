@@ -57,7 +57,7 @@ def receive(form):
     send_time = form["send_time"]
     receive_time = time.time()
     rnd = form["rnd"]
-    details = json.dumps(form)
+    details = json.dumps({"form": form, "IP": request.remote_addr})
 
     # save log
     query = """INSERT INTO log_receive (pid, uid, rnd, send_time, receive_time, details) VALUES (?, ?, ?, ?, ?, ?);"""
