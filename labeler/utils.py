@@ -5,7 +5,7 @@ import json
 from io import BytesIO
 
 from PIL import Image
-from flask import session
+from flask import current_app
 
 
 def int_key_json_load(x):
@@ -38,7 +38,7 @@ def encode(img):
 
 
 def zhmac(pid, z):
-    key = session.get("hmac_key")
+    key = hashlib.sha224(current_app.config["SECRET_KEY"]).digest()
     assert key is not None
 
     digest_maker = hmac.new(key, b"%d_%d" % (pid, z), hashlib.md5)

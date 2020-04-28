@@ -99,7 +99,6 @@ def login():
         if error is None:
             session.clear()
             session["user_id"] = user["id"]
-            session["hmac_key"] = os.urandom(16)
             return redirect(url_for("panel.show_list"))
 
         flash(error)
