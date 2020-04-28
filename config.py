@@ -1,4 +1,6 @@
 class Config:
+    NAME = "COVID-19"
+
     VIEW_LIST = [
         {"name": "Abdomen", "wl": 60, "ww": 400},
         {"name": "Angio", "wl": 300, "ww": 600},
@@ -9,7 +11,7 @@ class Config:
     ]
     DEFAULT_VIEW = 5
 
-    REGISTER_ACTIVE = True
+    REGISTER_ACTIVE = False
     SECRET_KEY = open(".secret_key", "rb").read()
-    MAX_ADDITIONAL_SLICE_PER_DAY = 300
+    MAX_ADDITIONAL_SLICE_PER_DAY = 1000
     MAX_PATIENT_PER_DAY = 600
