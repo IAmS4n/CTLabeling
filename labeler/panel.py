@@ -266,22 +266,29 @@ def get_list():
     return plist
 
 
-@bp.route("/slices<pid>", methods=["GET"])
-@login_required
-def update_slices(pid):
-    pid = int(pid)
-
+def get_wl_ww():
+    defult_conf = current_app.config["VIEW_LIST"][current_app.config["DEFAULT_VIEW"]]
     wl = request.args.get("wl")
     if wl is None:
-        wl = -400
+        wl = defult_conf["wl"]
     else:
         wl = int(wl)
 
     ww = request.args.get("ww")
     if ww is None:
-        ww = 1500
+        ww = defult_conf["ww"]
     else:
         ww = int(ww)
+
+    return wl, ww
+
+
+@bp.route("/slices<pid>", methods=["GET"])
+@login_required
+def update_slices(pid):
+    pid = int(pid)
+
+    wl, ww = get_wl_ww()
 
     slices, send_time, rnd, _, _ = prepare_normal_slices(pid, wl=wl, ww=ww)
 
@@ -295,22 +302,10 @@ def update_slices(pid):
 def additonal_slice(pid):
     pid = int(pid)
 
-    wl = request.args.get("wl")
-    if wl is None:
-        wl = -400
-    else:
-        wl = int(wl)
+    wl, ww = get_wl_ww()
 
-    ww = request.args.get("ww")
-    if ww is None:
-        ww = 1500
-    else:
-        ww = int(ww)
-
-    z_min = int(request.args.get("z_min"))
-    z_max = int(request.args.get("z_max"))
-    z_list = list(range(z_min, z_max))
-    assert len(z_list) <= 3
+    z_list = list(map(int, request.args.get("z_list").split(",")))
+    assert len(z_list) <= current_app.config["MAX_ADDITIONAL_SLICE_PER_REQUEST"]
 
     slices, send_time, rnd = prepare_additional_slice(pid, wl=wl, ww=ww, z_list=z_list)
 

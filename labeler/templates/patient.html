@@ -51,11 +51,11 @@
                         {{ slice.z }}
                     </th>
                     <th>
-                        <a onclick="additional_slices({{ slice.z }}, true)"
+                        <a onclick="additional_slices({{ slice.z }});"
                            onmouseover="show_big({{ slice.z }});"
                            style="cursor: ns-resize;"
                         >
-                            <img id="img_{{ slice.z }}"
+                            <img id="img_{{ slice.z }}" class="small_images"
                                  {% if slice.img %} src="{{ slice.img }}" {% else %} src="" {% endif %}
                                  style="max-width: 100%;"
                             >
@@ -100,10 +100,14 @@
                         <label for="dicom_need">Needs DICOM</label>
 
                         <br>
-
                         <button type="submit"
-                                style="display: block;margin: auto;background-color: crimson;color: white;">
+                        style="display: block;margin: auto;background-color: crimson;color: white;">
                             Save & Next
+                        </button>
+                        <br>
+                        <button type="button" onclick="double_slices()"
+                                style="display: block;margin: auto;background-color: cornflowerblue;color: white;">
+                            Double Slices
                         </button>
                     </th>
                     <th></th>
@@ -155,25 +159,54 @@
         selected_view_ww = "{{view.ww}}";
         load_selected_view()
 
-        for (var i = 0; i < additional_z_list.length; i++) {
-            additional_slices(additional_z_list[i], false);
-        }
+        z_query = "";
+        for (var i = 0; i < additional_z_list.length; i++)
+            z_query += additional_z_list[i].toString() + "," ;
+        z_query = z_query.substring(0, z_query.length - 1);
+        update_images(z_query);
     }
     {% endfor %}
 
-    function additional_slices(z, new_z) {
-        if (new_z) {
-            additional_z_list.push(z)
-        }
-        var min_z = (z - 1).toString();
-        var max_z = (z + 2).toString();
+    function additional_slices(z) {
 
+        additional_z_list.push(z+1)
+        additional_z_list.push(z-1)
+
+        var prev_z = (z - 1).toString();
+        var next_z = (z + 1).toString();
+
+        update_images(prev_z + "," + next_z);
+    }
+
+    function double_slices() {
+        if (confirm("Slices Doubling")) {
+            var all_imgs = document.querySelectorAll("img:not([src=''])[class=small_images]");
+            var z_list = [];
+            for (var i = 0; i < all_imgs.length; i++) {
+                z = parseInt(all_imgs[i].id.split("_")[1]);
+                z_list.push(z);
+            }
+
+            z_query = "";
+            for (var i = 1; i < z_list.length; i++) {
+                new_z = Math.round((z_list[i - 1] + z_list[i]) / 2);
+                additional_z_list.push(new_z);
+                z_query += new_z.toString() + ",";
+            }
+            z_query = z_query.substring(0, z_query.length - 1);
+
+            update_images(z_query);
+        }
+    }
+
+    function update_images(z_query) {
         var script = document.createElement("script");
         script.type = "text/javascript";
-        script.src = "more_slices{{pid}}?wl=" + selected_view_wl + "&ww=" + selected_view_ww + "&z_min=" + min_z + "&z_max=" + max_z;
+        script.src = "more_slices{{pid}}?wl=" + selected_view_wl + "&ww=" + selected_view_ww + "&z_list=" + z_query;
         document.getElementsByTagName("head")[0].appendChild(script);
         return false;
     }
+
 
     function show_big(z_num) {
         document.getElementById("main_img").src = document.getElementById("img_" + z_num).src;
@@ -187,8 +220,11 @@
         var slice_status = {};
         var all_radios = document.querySelectorAll('input[type="radio"]');
         for (var i = 0; i < all_radios.length; i++) {
-            z = all_radios[i].name.split("_")[1];
-            hmac = all_radios[i].name.split("_")[2];
+            tmp = all_radios[i].name.split("_");
+            if (tmp.length!==3)
+                continue;
+            z = tmp[1];
+            hmac = tmp[2];
             if (hmac !== "") {
                 if (z in slice_status) {
                     slice_status[z] |= all_radios[i].checked;
@@ -210,7 +246,7 @@
         }
 
         if (!all_checked) {
-            if (confirm("Are you sure? There are some unchecked slices!")) {
+            if (confirm("There are some unchecked slices!")) {
                 return true;
             } else {
                 document.getElementById("tbl_row_" + first_z).scrollIntoView();
