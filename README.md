@@ -6,4 +6,4 @@ Labeling page:
 ![](panel_demo.png)
 
 Patient list page:
-![](list_demo.png)
+![](patient_list_demo.png)
