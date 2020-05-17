@@ -5,8 +5,8 @@
 
 A simple privacy-focused web panel for labeling CT Scan's slices. 
 
-Labeling page:
+***Labeling page:***
 ![](panel_demo.png)
 
-Patient list page:
+***Patient list page:***
 ![](patient_list_demo.png)
